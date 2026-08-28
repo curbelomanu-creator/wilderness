@@ -1,56 +1,58 @@
 # Wilderness
 
-Wilderness es un prototipo web 3D procedural de supervivencia, exploración, reclutamiento y conquista inspirado visualmente en el Medio Oriente bíblico.
+Wilderness es un prototipo web 3D procedural de supervivencia, exploración, reclutamiento, vida nómada y conquista inspirado visualmente en el Medio Oriente bíblico.
 
-## Versión 0.4 — Ejército y Guerra
+## Versión 0.5 — Campamento, Ganado y Pastores
 
-La 0.4 convierte a los seguidores en una fuerza militar organizada:
+La 0.5 añade la primera capa real de supervivencia colectiva y vida nómada:
 
-- Hasta **60 seguidores activos** en el prototipo.
-- Reclutas con tres especialidades: **infantería, arqueros y caballería**.
-- Grupos seleccionables: todos, infantería, arqueros o caballería.
-- Órdenes por grupo: **seguir, mantener posición, atacar y retirada**.
-- Formaciones: **línea, columna y cuña**.
-- Arqueros con proyectiles y combate a distancia.
-- Caballería más rápida y con mayor daño de carga.
-- Guarniciones de ciudad mixtas con infantería, arqueros y, en ciudades mayores, caballería.
-- Separación básica entre seguidores para reducir amontonamientos.
-- Tras conquistar una ciudad, sus habitantes pueden ser reclutados.
-- Se mantiene el mundo procedural por chunks, semillas, biomas, caminos, cuevas, aldeas, ciudades variables, ganado y monturas.
+- **Campamento móvil** que puedes establecer y levantar en cualquier región.
+- El campamento genera visualmente tiendas, fogata, cajas y un corral.
+- Puedes dejar el ganado en el campamento mientras sales con tu gente.
+- Hasta **3 seguidores pueden ser asignados como pastores**.
+- Los pastores permanecen junto al rebaño y quedan fuera de las órdenes militares mientras cumplen esa función.
+- El rebaño tiene una **condición** que depende de la calidad del pasto y de la cantidad de pastores.
+- Oasis, valles fértiles y estepas son mejores zonas de pastoreo que el desierto o la montaña rocosa.
+- **Ovejas y cabras se reproducen gradualmente** cuando existen machos y hembras adultos, un campamento, pastores y buenas condiciones.
+- Las crías nacen pequeñas y crecen con el tiempo.
+- Se añadieron **cabras** como segunda especie de ganado.
+- Leones y enemigos también pueden atacar cabras.
+- Descansar cerca de la fogata recupera lentamente vida mientras el campamento no esté bajo amenaza.
+- Se mantienen todas las funciones de 0.4: hasta 60 seguidores, infantería, arqueros, caballería, grupos, formaciones, combate a distancia y conquista de ciudades.
 - Compatible con computadora, teléfono y tablet.
 
 ## Computadora
 
-- WASD: mover
-- Shift: correr
-- E: interactuar / reclutar / montar
-- F: atacar y ordenar ataque al grupo seleccionado
-- Q: cambiar grupo seleccionado
-- V: cambiar formación
-- T: ordenar seguir
-- H: mantener posición
-- R: retirada
-- 1: que siga la gente
-- 2: que siga el ganado
-- 3: que sigan todos
-- 4: que no siga nadie
+### Vida nómada
+- `C`: establecer / levantar campamento
+- `P`: aumentar la cantidad de pastores asignados; al llegar al máximo vuelve a 0
+- `1`: que siga la gente
+- `2`: que siga el ganado
+- `3`: que sigan todos
+- `4`: que no siga nadie
+
+### Ejército
+- `WASD`: mover
+- `Shift`: correr
+- `E`: interactuar / reclutar / montar
+- `F`: atacar y ordenar ataque al grupo seleccionado
+- `Q`: cambiar grupo seleccionado
+- `V`: cambiar formación
+- `T`: ordenar seguir
+- `H`: mantener posición
+- `R`: retirada
 - Arrastrar con botón derecho: girar cámara
 
 ## Teléfono / tablet
 
-- Joystick izquierdo: mover
-- Arrastrar el mundo: girar cámara
-- ACCIÓN: interactuar / reclutar / montar
-- ATACAR: ataque personal + orden de ataque al grupo seleccionado
-- RETIRADA: retirar el grupo seleccionado
-- CORRER: mantener presionado
-- GRUPO: alternar Todos / Infantería / Arqueros / Caballería
-- FORMA: alternar Línea / Columna / Cuña
-- SEGUIR: ordenar seguir al grupo seleccionado
-- MANTENER: fijar la posición del grupo seleccionado
-- GENTE / GANADO / TODOS / NADIE: decidir qué parte del pueblo acompaña al jugador
+Además de los controles tácticos de movimiento y combate, aparecen dos controles nuevos:
 
-La orientación horizontal es la recomendada para batallas grandes.
+- `CAMPAMENTO`: establecer o levantar el campamento
+- `PASTORES`: asignar progresivamente 0–3 pastores
+
+Los controles `GENTE / GANADO / TODOS / NADIE` continúan determinando qué parte del pueblo acompaña al jugador.
+
+La orientación horizontal es la recomendada para batallas y manejo de grupos grandes.
 
 ## Mundo procedural
 
@@ -64,7 +66,8 @@ No hay proceso de build.
 - `world.js`: semilla y generación procedural.
 - `engine04.js`: renderizado, chunks, entidades, asentamientos y tipos de tropas.
 - `army04.js`: órdenes, formaciones, reclutamiento, combate e IA militar.
-- `main04.js`: jugador, cámara, conquista, interfaz y loop principal.
+- `main04.js`: jugador, cámara, conquista, interfaz y loop principal; carga la extensión 0.5.
+- `camp05.js`: campamentos, pastores, pastoreo, reproducción y crecimiento del ganado.
 
 ## GitHub Pages
 
