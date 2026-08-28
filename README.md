@@ -1,77 +1,71 @@
 # Wilderness
 
-Versión **0.3** del prototipo de un videojuego 3D procedural de supervivencia, exploración, reclutamiento y conquista inspirado visualmente en el Medio Oriente bíblico.
+Wilderness es un prototipo web 3D procedural de supervivencia, exploración, reclutamiento y conquista inspirado visualmente en el Medio Oriente bíblico.
 
-## Novedades de 0.3
+## Versión 0.4 — Ejército y Guerra
 
-- Mundo generado por **chunks** mientras el jugador avanza.
-- **Semillas reproducibles**: una misma semilla vuelve a crear el mismo mundo.
-- Biomas: desierto, estepa, valle fértil, oasis y regiones rocosas.
-- Caminos procedurales entre asentamientos.
-- Aldeas y ciudades con ubicación, tamaño y población variables.
-- Ciudades con nombre, rey, murallas, casas y guarnición procedurales.
-- Cuevas básicas generadas en regiones rocosas.
-- Fauna procedural por región: ovejas, leones, caballos y camellos.
-- El botón **NUEVO MUNDO** permite escribir una semilla o generar una aleatoria.
-- El terreno lejano se descarga para mantener mejor rendimiento en computadora y teléfono.
-- Los seguidores se colocan en una formación básica en vez de amontonarse.
-- `ATACAR / F` también da una orden temporal de ataque a los seguidores.
+La 0.4 convierte a los seguidores en una fuerza militar organizada:
 
-## Mecánicas actuales
-
-- Explorar un mundo 3D generado proceduralmente sin imágenes externas.
-- Reclutar aldeanos.
-- Dar órdenes para que sigan: gente, ganado, todos o nadie.
-- Añadir ovejas al ganado.
-- Montar caballos y camellos.
-- Combatir soldados y leones.
-- Descubrir aldeas, ciudades y cuevas.
-- Derrotar la guarnición y el rey para conquistar una ciudad.
-- Jugar tanto desde computadora como teléfono.
+- Hasta **60 seguidores activos** en el prototipo.
+- Reclutas con tres especialidades: **infantería, arqueros y caballería**.
+- Grupos seleccionables: todos, infantería, arqueros o caballería.
+- Órdenes por grupo: **seguir, mantener posición, atacar y retirada**.
+- Formaciones: **línea, columna y cuña**.
+- Arqueros con proyectiles y combate a distancia.
+- Caballería más rápida y con mayor daño de carga.
+- Guarniciones de ciudad mixtas con infantería, arqueros y, en ciudades mayores, caballería.
+- Separación básica entre seguidores para reducir amontonamientos.
+- Tras conquistar una ciudad, sus habitantes pueden ser reclutados.
+- Se mantiene el mundo procedural por chunks, semillas, biomas, caminos, cuevas, aldeas, ciudades variables, ganado y monturas.
+- Compatible con computadora, teléfono y tablet.
 
 ## Computadora
 
-- `WASD`: mover
-- `Shift`: correr
-- `E`: interactuar / reclutar / montar / desmontar
-- `F`: atacar y ordenar ataque
-- `R`: retirada
-- `1`: gente
-- `2`: ganado
-- `3`: todos
-- `4`: nadie
+- WASD: mover
+- Shift: correr
+- E: interactuar / reclutar / montar
+- F: atacar y ordenar ataque al grupo seleccionado
+- Q: cambiar grupo seleccionado
+- V: cambiar formación
+- T: ordenar seguir
+- H: mantener posición
+- R: retirada
+- 1: que siga la gente
+- 2: que siga el ganado
+- 3: que sigan todos
+- 4: que no siga nadie
 - Arrastrar con botón derecho: girar cámara
 
 ## Teléfono / tablet
 
 - Joystick izquierdo: mover
 - Arrastrar el mundo: girar cámara
-- `ACCIÓN`: reclutar / montar / desmontar
-- `ATACAR`: atacar y ordenar ataque
-- `RETIRADA`: retirar seguidores
-- `CORRER`: mantener presionado
-- `GENTE / GANADO / TODOS / NADIE`: seleccionar quién sigue al jugador
+- ACCIÓN: interactuar / reclutar / montar
+- ATACAR: ataque personal + orden de ataque al grupo seleccionado
+- RETIRADA: retirar el grupo seleccionado
+- CORRER: mantener presionado
+- GRUPO: alternar Todos / Infantería / Arqueros / Caballería
+- FORMA: alternar Línea / Columna / Cuña
+- SEGUIR: ordenar seguir al grupo seleccionado
+- MANTENER: fijar la posición del grupo seleccionado
+- GENTE / GANADO / TODOS / NADIE: decidir qué parte del pueblo acompaña al jugador
 
-La orientación horizontal sigue siendo la recomendada.
+La orientación horizontal es la recomendada para batallas grandes.
 
-## Semillas
+## Mundo procedural
 
-Puedes abrir un mundo específico usando:
-
-`?seed=583271`
-
-al final de la URL de GitHub Pages, o usar el botón **NUEVO MUNDO** dentro del juego.
+Cada mundo tiene una semilla reproducible. El terreno se genera por chunks alrededor del jugador e incluye desierto, estepa, valles fértiles, oasis y regiones rocosas. Las ciudades tienen nombre, rey, población y guarnición variables.
 
 ## Arquitectura
 
 No hay proceso de build.
 
-- `index.html`: interfaz, controles móviles y selector de semilla.
-- `world.js`: generación determinista del mundo, biomas, caminos, asentamientos y cuevas.
-- `game.js`: renderizado 3D, chunks, entidades, IA, combate y conquista.
-
-Three.js se carga desde CDN.
+- `index.html`: interfaz y controles.
+- `world.js`: semilla y generación procedural.
+- `engine04.js`: renderizado, chunks, entidades, asentamientos y tipos de tropas.
+- `army04.js`: órdenes, formaciones, reclutamiento, combate e IA militar.
+- `main04.js`: jugador, cámara, conquista, interfaz y loop principal.
 
 ## GitHub Pages
 
-Los cambios a `main` se publican mediante GitHub Pages. El repositorio contiene el workflow de despliegue.
+Los cambios a `main` se publican automáticamente mediante GitHub Pages.
