@@ -1,0 +1,221 @@
+(() => {
+  const params = new URLSearchParams(location.search);
+  let seedToken = params.get('seed');
+  if (!seedToken) {
+    seedToken = String(Math.floor(Date.now() % 1000000000));
+    params.set('seed', seedToken);
+    history.replaceState(null, '', `${location.pathname}?${params.toString()}${location.hash}`);
+  }
+
+  function hashString(str) {
+    let h = 2166136261 >>> 0;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  const worldSeed = hashString(seedToken);
+  const TILE = 4;
+  const CHUNK_SIZE = 48;
+  const SETTLE_CELL = 120;
+
+  function hash2i(x, z, salt = 0) {
+    let h = worldSeed ^ Math.imul(x | 0, 374761393) ^ Math.imul(z | 0, 668265263) ^ Math.imul(salt | 0, 1442695041);
+    h = Math.imul(h ^ (h >>> 13), 1274126177);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967295;
+  }
+
+  function randAt(x, z, salt = 0) {
+    return hash2i(Math.floor(x), Math.floor(z), salt);
+  }
+
+  function fade(t) { return t * t * (3 - 2 * t); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function valueNoise(x, z, scale, salt = 0) {
+    const fx = x / scale, fz = z / scale;
+    const x0 = Math.floor(fx), z0 = Math.floor(fz);
+    const tx = fade(fx - x0), tz = fade(fz - z0);
+    const a = hash2i(x0, z0, salt);
+    const b = hash2i(x0 + 1, z0, salt);
+    const c = hash2i(x0, z0 + 1, salt);
+    const d = hash2i(x0 + 1, z0 + 1, salt);
+    return lerp(lerp(a, b, tx), lerp(c, d, tx), tz);
+  }
+
+  const startAngle = hash2i(1, 1, 501) * Math.PI * 2;
+  const starterVillage = {
+    id: 'starter-village',
+    type: 'village',
+    x: Math.cos(startAngle) * 72,
+    z: Math.sin(startAngle) * 72,
+    tier: 1,
+    population: 22 + Math.floor(hash2i(2, 2, 502) * 24),
+    defenders: 0,
+    name: ''
+  };
+  const cityAngle = startAngle + (0.85 + hash2i(3, 3, 503) * 0.75) * (hash2i(4, 4, 504) > .5 ? 1 : -1);
+  const starterCity = {
+    id: 'starter-city',
+    type: 'city',
+    x: Math.cos(cityAngle) * (165 + hash2i(5, 5, 505) * 35),
+    z: Math.sin(cityAngle) * (165 + hash2i(6, 6, 506) * 35),
+    tier: 1 + Math.floor(hash2i(7, 7, 507) * 2),
+    population: 85 + Math.floor(hash2i(8, 8, 508) * 90),
+    defenders: 8 + Math.floor(hash2i(9, 9, 509) * 8),
+    name: ''
+  };
+
+  const syllablesA = ['Beth', 'En', 'Qir', 'Haz', 'Ad', 'Ram', 'Ma', 'Gib', 'Tel', 'Beer', 'Ked', 'Shalem', 'Ner', 'Zik'];
+  const syllablesB = ['or', 'esh', 'ad', 'on', 'em', 'ir', 'ah', 'el', 'oth', 'an', 'ur', 'aim', 'eth', 'ar'];
+  const kingNames = ['Ammiel', 'Zuriel', 'Abiram', 'Nadab', 'Mattan', 'Eliab', 'Joram', 'Reuel', 'Zaccur', 'Hiram', 'Omri', 'Asahel', 'Neriah', 'Malquiel'];
+
+  function nameFrom(x, z, salt = 0) {
+    const a = syllablesA[Math.floor(hash2i(x, z, 601 + salt) * syllablesA.length) % syllablesA.length];
+    const b = syllablesB[Math.floor(hash2i(x, z, 602 + salt) * syllablesB.length) % syllablesB.length];
+    return `${a}-${b}`;
+  }
+
+  function kingFrom(x, z) {
+    return kingNames[Math.floor(hash2i(x, z, 603) * kingNames.length) % kingNames.length];
+  }
+
+  starterVillage.name = nameFrom(11, 17, 1);
+  starterCity.name = nameFrom(19, 23, 2);
+  starterCity.king = kingFrom(19, 23);
+
+  function oasisCenterForSector(sx, sz) {
+    if (hash2i(sx, sz, 701) < .72) return null;
+    const size = 112;
+    return {
+      x: (sx + .5) * size + (hash2i(sx, sz, 702) - .5) * 42,
+      z: (sz + .5) * size + (hash2i(sx, sz, 703) - .5) * 42,
+      r: 11 + hash2i(sx, sz, 704) * 11
+    };
+  }
+
+  function oasisAt(x, z) {
+    if (Math.hypot(x - starterVillage.x, z - starterVillage.z) < 17) return true;
+    const size = 112;
+    const sx = Math.floor(x / size), sz = Math.floor(z / size);
+    for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) {
+      const o = oasisCenterForSector(sx + dx, sz + dz);
+      if (o && Math.hypot(x - o.x, z - o.z) < o.r) return true;
+    }
+    return false;
+  }
+
+  function rawElevation(x, z) {
+    const broad = valueNoise(x, z, 150, 21) - .5;
+    const hills = valueNoise(x, z, 58, 22) - .5;
+    const ridge = Math.abs(valueNoise(x, z, 36, 23) - .5);
+    return broad * 8.2 + hills * 6.5 + ridge * 3.2 - 1.4;
+  }
+
+  function groundY(x, z) {
+    const e = rawElevation(x, z);
+    return Math.round(e / .55) * .55;
+  }
+
+  function biomeAt(x, z) {
+    if (oasisAt(x, z)) return 'oasis';
+    const moisture = valueNoise(x, z, 180, 31) * .65 + valueNoise(x, z, 70, 32) * .35;
+    const rugged = valueNoise(x, z, 72, 33);
+    const elevation = rawElevation(x, z);
+    if (elevation > 4.1 || rugged > .76) return 'rocky';
+    if (moisture > .66) return 'fertile';
+    if (moisture > .51) return 'steppe';
+    return 'desert';
+  }
+
+  const settlementCache = new Map();
+
+  function settlementDef(cellX, cellZ) {
+    const key = `${cellX},${cellZ}`;
+    if (settlementCache.has(key)) return settlementCache.get(key);
+    if (hash2i(cellX, cellZ, 801) < .69) {
+      settlementCache.set(key, null);
+      return null;
+    }
+    const x = (cellX + .5) * SETTLE_CELL + (hash2i(cellX, cellZ, 802) - .5) * 46;
+    const z = (cellZ + .5) * SETTLE_CELL + (hash2i(cellX, cellZ, 803) - .5) * 46;
+    if (Math.hypot(x, z) < 105 || Math.hypot(x - starterVillage.x, z - starterVillage.z) < 80 || Math.hypot(x - starterCity.x, z - starterCity.z) < 95) {
+      settlementCache.set(key, null);
+      return null;
+    }
+    const cityRoll = hash2i(cellX, cellZ, 804);
+    const type = cityRoll > .66 ? 'city' : 'village';
+    const tier = type === 'city' ? 1 + Math.floor(hash2i(cellX, cellZ, 805) * 3) : 1;
+    const population = type === 'city'
+      ? 70 + tier * 45 + Math.floor(hash2i(cellX, cellZ, 806) * 95)
+      : 12 + Math.floor(hash2i(cellX, cellZ, 806) * 38);
+    const defenders = type === 'city'
+      ? 6 + tier * 4 + Math.floor(hash2i(cellX, cellZ, 807) * 8)
+      : 0;
+    const s = {
+      id: `cell-${cellX}-${cellZ}`,
+      cellX, cellZ, x, z, type, tier, population, defenders,
+      name: nameFrom(cellX, cellZ, 3),
+      king: type === 'city' ? kingFrom(cellX, cellZ) : null
+    };
+    settlementCache.set(key, s);
+    return s;
+  }
+
+  function settlementsNearBounds(minX, maxX, minZ, maxZ, margin = 20) {
+    const out = [];
+    const special = [starterVillage, starterCity];
+    for (const s of special) {
+      if (s.x >= minX - margin && s.x <= maxX + margin && s.z >= minZ - margin && s.z <= maxZ + margin) out.push(s);
+    }
+    const cminX = Math.floor((minX - margin) / SETTLE_CELL) - 1;
+    const cmaxX = Math.floor((maxX + margin) / SETTLE_CELL) + 1;
+    const cminZ = Math.floor((minZ - margin) / SETTLE_CELL) - 1;
+    const cmaxZ = Math.floor((maxZ + margin) / SETTLE_CELL) + 1;
+    for (let cx = cminX; cx <= cmaxX; cx++) for (let cz = cminZ; cz <= cmaxZ; cz++) {
+      const s = settlementDef(cx, cz);
+      if (s && s.x >= minX - margin && s.x <= maxX + margin && s.z >= minZ - margin && s.z <= maxZ + margin) out.push(s);
+    }
+    return out;
+  }
+
+  function pointSegDist(px, pz, ax, az, bx, bz) {
+    const vx = bx - ax, vz = bz - az;
+    const wx = px - ax, wz = pz - az;
+    const len2 = vx * vx + vz * vz || 1;
+    const t = Math.max(0, Math.min(1, (wx * vx + wz * vz) / len2));
+    return Math.hypot(px - (ax + vx * t), pz - (az + vz * t));
+  }
+
+  function roadAt(x, z) {
+    if (pointSegDist(x, z, starterVillage.x, starterVillage.z, starterCity.x, starterCity.z) < 2.7) return true;
+    const cx = Math.floor(x / SETTLE_CELL), cz = Math.floor(z / SETTLE_CELL);
+    for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) {
+      const a = settlementDef(cx + dx, cz + dz);
+      if (!a) continue;
+      const east = settlementDef(cx + dx + 1, cz + dz);
+      const south = settlementDef(cx + dx, cz + dz + 1);
+      if (east && pointSegDist(x, z, a.x, a.z, east.x, east.z) < 2.35) return true;
+      if (south && pointSegDist(x, z, a.x, a.z, south.x, south.z) < 2.35) return true;
+    }
+    return false;
+  }
+
+  function caveDefForChunk(cx, cz) {
+    if (hash2i(cx, cz, 901) < .78) return null;
+    const x = cx * CHUNK_SIZE + (hash2i(cx, cz, 902) * .72 + .14) * CHUNK_SIZE;
+    const z = cz * CHUNK_SIZE + (hash2i(cx, cz, 903) * .72 + .14) * CHUNK_SIZE;
+    if (biomeAt(x, z) !== 'rocky') return null;
+    return { id: `cave-${cx}-${cz}`, x, z, rot: hash2i(cx, cz, 904) * Math.PI * 2 };
+  }
+
+  window.WildernessWorld = {
+    seedToken, worldSeed, TILE, CHUNK_SIZE, SETTLE_CELL,
+    hash2i, randAt, valueNoise, groundY, biomeAt, roadAt,
+    settlementDef, settlementsNearBounds, caveDefForChunk,
+    starterVillage, starterCity
+  };
+})();
