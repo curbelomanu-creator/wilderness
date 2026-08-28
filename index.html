@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#15100a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Wilderness — 0.3</title>
+  <title>Wilderness — 0.4</title>
   <style>
     :root { --safe-top: env(safe-area-inset-top, 0px); --safe-right: env(safe-area-inset-right, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px); --safe-left: env(safe-area-inset-left, 0px); }
     * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -17,10 +17,10 @@
     #hud { position:fixed; inset:0; pointer-events:none; color:#f4e6c4; text-shadow:0 2px 2px #000; user-select:none; -webkit-user-select:none; }
     .panel { position:absolute; background:rgba(28,19,11,.76); border:2px solid rgba(235,204,145,.75); box-shadow:0 5px 18px rgba(0,0,0,.35); padding:10px 12px; backdrop-filter:blur(2px); }
     #stats { left:calc(14px + var(--safe-left)); top:calc(14px + var(--safe-top)); min-width:220px; }
-    #orders { right:calc(14px + var(--safe-right)); bottom:calc(14px + var(--safe-bottom)); min-width:270px; max-width:330px; }
+    #orders { right:calc(14px + var(--safe-right)); bottom:calc(14px + var(--safe-bottom)); min-width:285px; max-width:350px; }
     #message { left:50%; top:calc(18px + var(--safe-top)); transform:translateX(-50%); font-size:18px; padding:8px 14px; opacity:0; transition:opacity .2s; text-align:center; max-width:min(82vw,680px); }
     #crosshair { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:8px; height:8px; border:2px solid rgba(255,245,220,.8); }
-    #help { left:calc(14px + var(--safe-left)); bottom:calc(14px + var(--safe-bottom)); max-width:430px; font-size:12px; line-height:1.45; }
+    #help { left:calc(14px + var(--safe-left)); bottom:calc(14px + var(--safe-bottom)); max-width:560px; font-size:12px; line-height:1.45; }
     b { color:#fff0b8; }
 
     #world-button { position:fixed; z-index:20; top:calc(14px + var(--safe-top)); right:calc(14px + var(--safe-right)); border:2px solid rgba(235,204,145,.75); border-radius:8px; padding:8px 10px; color:#f7e4bb; background:rgba(28,19,11,.82); box-shadow:0 4px 14px rgba(0,0,0,.3); }
@@ -45,9 +45,12 @@
     #btn-interact { width:62px; height:62px; right:78px; bottom:82px; font-size:12px; }
     #btn-retreat { width:58px; height:58px; right:86px; bottom:9px; font-size:10px; }
     #btn-run { width:48px; height:48px; right:0; bottom:0; font-size:10px; }
-    #mobile-orders { position:absolute; left:50%; transform:translateX(-50%); bottom:calc(13px + var(--safe-bottom)); display:flex; gap:6px; pointer-events:auto; }
-    .order-btn { pointer-events:auto; border:1.5px solid rgba(255,232,180,.62); background:rgba(28,19,11,.70); color:#f7e4bb; border-radius:9px; padding:7px 8px; min-width:46px; font-size:10px; font-weight:800; box-shadow:0 3px 10px rgba(0,0,0,.28); touch-action:none; }
+    #mobile-orders { position:absolute; left:50%; transform:translateX(-50%); bottom:calc(9px + var(--safe-bottom)); display:flex; gap:5px; pointer-events:auto; }
+    .order-btn { pointer-events:auto; border:1.5px solid rgba(255,232,180,.62); background:rgba(28,19,11,.70); color:#f7e4bb; border-radius:9px; padding:7px 8px; min-width:46px; font-size:9px; font-weight:800; box-shadow:0 3px 10px rgba(0,0,0,.28); touch-action:none; }
     .order-btn.active { background:rgba(162,105,57,.9); color:white; border-color:#fff0b8; }
+    #battle-bar { position:absolute; left:50%; transform:translateX(-50%); bottom:calc(47px + var(--safe-bottom)); display:flex; gap:5px; pointer-events:auto; white-space:nowrap; }
+    .battle-btn { pointer-events:auto; border:1.5px solid rgba(255,223,166,.7); background:rgba(57,38,23,.80); color:#fff0cf; border-radius:8px; padding:7px 8px; font-size:9px; font-weight:900; box-shadow:0 3px 10px rgba(0,0,0,.3); touch-action:none; }
+    .battle-btn:active { transform:scale(.96); background:rgba(139,82,45,.9); }
     #camera-hint { position:absolute; right:calc(18px + var(--safe-right)); top:calc(58px + var(--safe-top)); font-size:10px; opacity:.72; text-align:right; }
     #orientation-hint { display:none; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); background:rgba(18,12,8,.88); border:2px solid rgba(255,232,180,.65); padding:14px 18px; border-radius:12px; width:min(82vw,340px); text-align:center; font-size:12px; line-height:1.45; pointer-events:none; }
 
@@ -55,20 +58,21 @@
       #mobile-ui { display:block; }
       #help, #orders { display:none; }
       #crosshair { width:6px; height:6px; opacity:.72; }
-      #stats { min-width:0; width:auto; max-width:61vw; font-size:9px; line-height:1.3; padding:7px 8px; }
-      #message { top:calc(9px + var(--safe-top)); font-size:12px; padding:6px 9px; max-width:58vw; }
+      #stats { min-width:0; width:auto; max-width:58vw; font-size:8.5px; line-height:1.28; padding:7px 8px; }
+      #message { top:calc(9px + var(--safe-top)); font-size:11px; padding:6px 9px; max-width:54vw; }
       #world-button { font-size:9px; padding:7px 8px; }
       #camera-hint { display:block; }
     }
 
     @media (pointer:coarse) and (orientation:portrait) and (max-width:600px) {
-      #orientation-hint { display:block; top:34%; }
+      #orientation-hint { display:block; top:31%; }
       #joystick-zone { width:118px; height:118px; }
       #joystick-base { inset:8px; }
       #joystick-stick { left:38px; top:38px; width:42px; height:42px; }
-      #action-cluster { transform:scale(.9); transform-origin:bottom right; }
-      #mobile-orders { bottom:calc(5px + var(--safe-bottom)); gap:4px; }
-      .order-btn { padding:6px; min-width:40px; font-size:9px; }
+      #action-cluster { transform:scale(.86); transform-origin:bottom right; }
+      #mobile-orders { bottom:calc(4px + var(--safe-bottom)); gap:3px; }
+      #battle-bar { bottom:calc(40px + var(--safe-bottom)); gap:3px; transform:translateX(-50%) scale(.88); transform-origin:center bottom; }
+      .order-btn, .battle-btn { padding:6px; min-width:38px; font-size:8px; }
     }
   </style>
 </head>
@@ -94,11 +98,11 @@
     <div id="message" class="panel"></div>
     <div id="crosshair"></div>
     <div id="help" class="panel">
-      <b>WASD</b> mover · <b>Shift</b> correr · <b>E</b> reclutar/montar · <b>F</b> atacar/ordenar ataque · <b>1</b> personas · <b>2</b> ganado · <b>3</b> todos · <b>4</b> nadie · <b>R</b> retirada · botón derecho para girar cámara
+      <b>WASD</b> mover · <b>Shift</b> correr · <b>E</b> reclutar/montar · <b>F</b> atacar · <b>Q</b> cambiar grupo · <b>V</b> formación · <b>T</b> seguir · <b>H</b> mantener · <b>R</b> retirada · <b>1–4</b> quién te sigue · botón derecho: cámara
     </div>
     <div id="mobile-ui">
       <div id="camera-hint">Arrastra la pantalla<br>para girar cámara</div>
-      <div id="orientation-hint">Funciona en vertical, pero para explorar y combatir resulta mejor girar el teléfono a <b>horizontal</b>.</div>
+      <div id="orientation-hint">Funciona en vertical, pero las batallas con ejército se juegan mejor con el teléfono en <b>horizontal</b>.</div>
       <div id="joystick-zone" aria-label="Movimiento">
         <div id="joystick-base"></div>
         <div id="joystick-stick"></div>
@@ -109,7 +113,13 @@
         <button id="btn-retreat" class="touch-btn" aria-label="Retirada">RETIRADA</button>
         <button id="btn-run" class="touch-btn" aria-label="Correr">CORRER</button>
       </div>
-      <div id="mobile-orders" aria-label="Órdenes de seguimiento">
+      <div id="battle-bar" aria-label="Mando del ejército">
+        <button id="btn-group" class="battle-btn">GRUPO TODOS</button>
+        <button id="btn-formation" class="battle-btn">FORMA LÍNEA</button>
+        <button id="btn-follow-army" class="battle-btn">SEGUIR</button>
+        <button id="btn-hold" class="battle-btn">MANTENER</button>
+      </div>
+      <div id="mobile-orders" aria-label="Órdenes de seguimiento del pueblo">
         <button class="order-btn active" data-follow="people">GENTE</button>
         <button class="order-btn" data-follow="livestock">GANADO</button>
         <button class="order-btn" data-follow="all">TODOS</button>
@@ -134,16 +144,16 @@
       document.getElementById('seed-close').addEventListener('click', close);
       document.getElementById('seed-use').addEventListener('click', () => go(input.value));
       document.getElementById('seed-random').addEventListener('click', () => {
-        const a = new Uint32Array(1);
-        crypto.getRandomValues(a);
-        go(a[0] % 1000000000);
+        const a = new Uint32Array(1); crypto.getRandomValues(a); go(a[0] % 1000000000);
       });
       input.addEventListener('keydown', e => { if (e.key === 'Enter') go(input.value); });
       modal.addEventListener('pointerdown', e => { if (e.target === modal) close(); });
     })();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.min.js"></script>
-  <script src="world.js"></script>
-  <script src="game.js"></script>
+  <script src="world.js?v=0.4"></script>
+  <script src="engine04.js?v=0.4"></script>
+  <script src="army04.js?v=0.4"></script>
+  <script src="main04.js?v=0.4"></script>
 </body>
 </html>
