@@ -1,159 +1,26 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#15100a" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Wilderness — 0.4</title>
-  <style>
-    :root { --safe-top: env(safe-area-inset-top, 0px); --safe-right: env(safe-area-inset-right, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px); --safe-left: env(safe-area-inset-left, 0px); }
-    * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-    html, body { margin:0; width:100%; height:100%; min-height:100dvh; overflow:hidden; background:#15100a; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; touch-action:none; overscroll-behavior:none; }
-    canvas { display:block; width:100%; height:100%; image-rendering:pixelated; touch-action:none; }
-    button, input { font:inherit; }
-    button { cursor:pointer; }
-    #hud { position:fixed; inset:0; pointer-events:none; color:#f4e6c4; text-shadow:0 2px 2px #000; user-select:none; -webkit-user-select:none; }
-    .panel { position:absolute; background:rgba(28,19,11,.76); border:2px solid rgba(235,204,145,.75); box-shadow:0 5px 18px rgba(0,0,0,.35); padding:10px 12px; backdrop-filter:blur(2px); }
-    #stats { left:calc(14px + var(--safe-left)); top:calc(14px + var(--safe-top)); min-width:220px; }
-    #orders { right:calc(14px + var(--safe-right)); bottom:calc(14px + var(--safe-bottom)); min-width:285px; max-width:350px; }
-    #message { left:50%; top:calc(18px + var(--safe-top)); transform:translateX(-50%); font-size:18px; padding:8px 14px; opacity:0; transition:opacity .2s; text-align:center; max-width:min(82vw,680px); }
-    #crosshair { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:8px; height:8px; border:2px solid rgba(255,245,220,.8); }
-    #help { left:calc(14px + var(--safe-left)); bottom:calc(14px + var(--safe-bottom)); max-width:560px; font-size:12px; line-height:1.45; }
-    b { color:#fff0b8; }
-
-    #world-button { position:fixed; z-index:20; top:calc(14px + var(--safe-top)); right:calc(14px + var(--safe-right)); border:2px solid rgba(235,204,145,.75); border-radius:8px; padding:8px 10px; color:#f7e4bb; background:rgba(28,19,11,.82); box-shadow:0 4px 14px rgba(0,0,0,.3); }
-    #world-modal { display:none; position:fixed; z-index:50; inset:0; align-items:center; justify-content:center; background:rgba(10,7,5,.78); padding:20px; pointer-events:auto; }
-    #world-modal.open { display:flex; }
-    #world-card { width:min(92vw,430px); background:#23180f; color:#f4e6c4; border:2px solid #d9b875; box-shadow:0 16px 45px rgba(0,0,0,.55); padding:20px; border-radius:12px; text-shadow:none; }
-    #world-card h2 { margin:0 0 8px; color:#fff0b8; }
-    #world-card p { font-size:12px; line-height:1.5; opacity:.9; }
-    #seed-input { width:100%; margin:8px 0 12px; padding:11px; border:1px solid #b58a54; border-radius:7px; background:#120d09; color:#fff0cf; outline:none; }
-    .world-actions { display:flex; flex-wrap:wrap; gap:8px; }
-    .world-actions button { flex:1; min-width:110px; border:1px solid #d1a96b; border-radius:7px; padding:10px; background:#5a3b24; color:#fff0cf; font-weight:800; }
-    .world-actions .secondary { background:#2f241a; }
-
-    #mobile-ui { display:none; position:absolute; inset:0; pointer-events:none; }
-    #joystick-zone { position:absolute; left:calc(18px + var(--safe-left)); bottom:calc(22px + var(--safe-bottom)); width:132px; height:132px; pointer-events:auto; touch-action:none; }
-    #joystick-base { position:absolute; inset:9px; border-radius:50%; background:rgba(33,25,15,.48); border:2px solid rgba(255,232,180,.52); box-shadow:inset 0 0 24px rgba(0,0,0,.32); }
-    #joystick-stick { position:absolute; left:43px; top:43px; width:46px; height:46px; border-radius:50%; background:rgba(245,213,151,.72); border:2px solid rgba(255,246,221,.78); box-shadow:0 4px 14px rgba(0,0,0,.35); transform:translate(0,0); }
-    #action-cluster { position:absolute; right:calc(18px + var(--safe-right)); bottom:calc(20px + var(--safe-bottom)); width:174px; height:164px; pointer-events:auto; }
-    .touch-btn { position:absolute; display:flex; align-items:center; justify-content:center; border:2px solid rgba(255,232,180,.66); color:#fff4d4; background:rgba(74,46,27,.68); text-shadow:0 2px 2px #000; box-shadow:0 5px 14px rgba(0,0,0,.35); border-radius:50%; font-weight:800; pointer-events:auto; touch-action:none; }
-    .touch-btn:active, .touch-btn.active { transform:scale(.94); background:rgba(139,82,45,.88); }
-    #btn-attack { width:72px; height:72px; right:0; bottom:38px; font-size:13px; }
-    #btn-interact { width:62px; height:62px; right:78px; bottom:82px; font-size:12px; }
-    #btn-retreat { width:58px; height:58px; right:86px; bottom:9px; font-size:10px; }
-    #btn-run { width:48px; height:48px; right:0; bottom:0; font-size:10px; }
-    #mobile-orders { position:absolute; left:50%; transform:translateX(-50%); bottom:calc(9px + var(--safe-bottom)); display:flex; gap:5px; pointer-events:auto; }
-    .order-btn { pointer-events:auto; border:1.5px solid rgba(255,232,180,.62); background:rgba(28,19,11,.70); color:#f7e4bb; border-radius:9px; padding:7px 8px; min-width:46px; font-size:9px; font-weight:800; box-shadow:0 3px 10px rgba(0,0,0,.28); touch-action:none; }
-    .order-btn.active { background:rgba(162,105,57,.9); color:white; border-color:#fff0b8; }
-    #battle-bar { position:absolute; left:50%; transform:translateX(-50%); bottom:calc(47px + var(--safe-bottom)); display:flex; gap:5px; pointer-events:auto; white-space:nowrap; }
-    .battle-btn { pointer-events:auto; border:1.5px solid rgba(255,223,166,.7); background:rgba(57,38,23,.80); color:#fff0cf; border-radius:8px; padding:7px 8px; font-size:9px; font-weight:900; box-shadow:0 3px 10px rgba(0,0,0,.3); touch-action:none; }
-    .battle-btn:active { transform:scale(.96); background:rgba(139,82,45,.9); }
-    #camera-hint { position:absolute; right:calc(18px + var(--safe-right)); top:calc(58px + var(--safe-top)); font-size:10px; opacity:.72; text-align:right; }
-    #orientation-hint { display:none; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); background:rgba(18,12,8,.88); border:2px solid rgba(255,232,180,.65); padding:14px 18px; border-radius:12px; width:min(82vw,340px); text-align:center; font-size:12px; line-height:1.45; pointer-events:none; }
-
-    @media (pointer:coarse), (max-width:820px) {
-      #mobile-ui { display:block; }
-      #help, #orders { display:none; }
-      #crosshair { width:6px; height:6px; opacity:.72; }
-      #stats { min-width:0; width:auto; max-width:58vw; font-size:8.5px; line-height:1.28; padding:7px 8px; }
-      #message { top:calc(9px + var(--safe-top)); font-size:11px; padding:6px 9px; max-width:54vw; }
-      #world-button { font-size:9px; padding:7px 8px; }
-      #camera-hint { display:block; }
-    }
-
-    @media (pointer:coarse) and (orientation:portrait) and (max-width:600px) {
-      #orientation-hint { display:block; top:31%; }
-      #joystick-zone { width:118px; height:118px; }
-      #joystick-base { inset:8px; }
-      #joystick-stick { left:38px; top:38px; width:42px; height:42px; }
-      #action-cluster { transform:scale(.86); transform-origin:bottom right; }
-      #mobile-orders { bottom:calc(4px + var(--safe-bottom)); gap:3px; }
-      #battle-bar { bottom:calc(40px + var(--safe-bottom)); gap:3px; transform:translateX(-50%) scale(.88); transform-origin:center bottom; }
-      .order-btn, .battle-btn { padding:6px; min-width:38px; font-size:8px; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#171108">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Wilderness — 0.5.1</title>
+<style>
+:root{--t:env(safe-area-inset-top,0px);--r:env(safe-area-inset-right,0px);--b:env(safe-area-inset-bottom,0px);--l:env(safe-area-inset-left,0px)}*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;min-height:100dvh;overflow:hidden;background:#171108;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;touch-action:none;overscroll-behavior:none}canvas{display:block;width:100%;height:100%;image-rendering:pixelated;touch-action:none}button,input{font:inherit}button{cursor:pointer}#hud{position:fixed;inset:0;pointer-events:none;color:#f4e6c4;text-shadow:0 2px 2px #000;user-select:none}.panel{position:absolute;background:rgba(28,19,11,.78);border:2px solid rgba(235,204,145,.72);box-shadow:0 5px 18px #0006;padding:9px 11px}#stats{left:calc(12px + var(--l));top:calc(12px + var(--t));min-width:210px}#orders{right:calc(12px + var(--r));bottom:calc(12px + var(--b));min-width:285px;max-width:350px}#message{left:50%;top:calc(14px + var(--t));transform:translateX(-50%);font-size:16px;padding:7px 12px;opacity:0;transition:.2s;text-align:center;max-width:80vw}#help{left:calc(12px + var(--l));bottom:calc(12px + var(--b));max-width:590px;font-size:11px;line-height:1.45}b{color:#fff0b8}#world-button{position:fixed;z-index:30;top:calc(12px + var(--t));right:calc(12px + var(--r));border:2px solid #d8b97ac0;border-radius:8px;padding:8px 10px;color:#f7e4bb;background:#1c130bd9}#world-modal{display:none;position:fixed;z-index:60;inset:0;align-items:center;justify-content:center;background:#0a0705d9;padding:20px;pointer-events:auto}#world-modal.open{display:flex}#world-card{width:min(92vw,430px);background:#23180f;color:#f4e6c4;border:2px solid #d9b875;padding:20px;border-radius:12px;text-shadow:none}#seed-input{width:100%;margin:8px 0 12px;padding:11px;border:1px solid #b58a54;border-radius:7px;background:#120d09;color:#fff0cf}.world-actions{display:flex;gap:8px;flex-wrap:wrap}.world-actions button{flex:1;min-width:100px;padding:10px;border:1px solid #d1a96b;border-radius:7px;background:#5a3b24;color:#fff0cf;font-weight:800}.world-actions .secondary{background:#2f241a}
+#startup{position:fixed;z-index:100;inset:0;display:flex;align-items:center;justify-content:center;background:#171108;color:#f6e7c8;text-align:center;padding:25px;pointer-events:none}#startup .card{max-width:420px}#startup strong{display:block;color:#fff0b8;font-size:20px;margin-bottom:8px}#startup small{opacity:.78;line-height:1.45}#startup.error{pointer-events:auto}#startup.error .card{border:2px solid #bc6c52;background:#2b1712;padding:18px;border-radius:12px}#startup.error small{color:#ffd7c9}
+#mobile-ui{display:none;position:absolute;inset:0;pointer-events:none}#joystick-zone{position:absolute;left:calc(15px + var(--l));bottom:calc(18px + var(--b));width:124px;height:124px;pointer-events:auto}#joystick-base{position:absolute;inset:8px;border-radius:50%;background:#21190f7a;border:2px solid #ffe8b484}#joystick-stick{position:absolute;left:40px;top:40px;width:44px;height:44px;border-radius:50%;background:#f5d597bd;border:2px solid #fff6ddd0}#action-cluster{position:absolute;right:calc(15px + var(--r));bottom:calc(18px + var(--b));width:172px;height:160px;pointer-events:auto}.touch-btn{position:absolute;display:flex;align-items:center;justify-content:center;border:2px solid #ffe8b4a8;color:#fff4d4;background:#4a2e1bad;text-shadow:0 2px 2px #000;border-radius:50%;font-weight:800;pointer-events:auto;touch-action:none}#btn-attack{width:70px;height:70px;right:0;bottom:38px}#btn-interact{width:60px;height:60px;right:78px;bottom:82px;font-size:11px}#btn-retreat{width:56px;height:56px;right:88px;bottom:8px;font-size:9px}#btn-run{width:48px;height:48px;right:0;bottom:0;font-size:9px}#mobile-orders,#battle-bar,#life-bar{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:4px;pointer-events:auto;white-space:nowrap}#mobile-orders{bottom:calc(5px + var(--b))}#battle-bar{bottom:calc(40px + var(--b))}#life-bar{bottom:calc(75px + var(--b))}.order-btn,.battle-btn,.life-btn{pointer-events:auto;border:1.5px solid #ffe0a6b3;background:#392617d8;color:#fff0cf;border-radius:8px;padding:6px 7px;font-size:8px;font-weight:900;touch-action:none}.order-btn.active{background:#a26939e8}#orientation-hint{display:none;position:absolute;left:50%;top:29%;transform:translate(-50%,-50%);background:#120c08e8;border:1px solid #ffe8b499;padding:9px 12px;border-radius:9px;width:min(78vw,320px);text-align:center;font-size:9px}
+@media(pointer:coarse),(max-width:820px){#mobile-ui{display:block}#help,#orders{display:none}#stats{min-width:0;max-width:56vw;font-size:8px;line-height:1.25;padding:6px 7px}#message{font-size:10px;max-width:50vw;padding:5px 7px}#world-button{font-size:8px;padding:6px 7px}}@media(pointer:coarse) and (orientation:portrait) and (max-width:600px){#orientation-hint{display:block}#joystick-zone{width:112px;height:112px}#joystick-stick{left:36px;top:36px;width:40px;height:40px}#action-cluster{transform:scale(.84);transform-origin:bottom right}#mobile-orders,#battle-bar,#life-bar{gap:2px;transform:translateX(-50%) scale(.86);transform-origin:center bottom}.order-btn,.battle-btn,.life-btn{padding:5px;font-size:7px}}
+</style>
 </head>
 <body>
-  <button id="world-button">NUEVO MUNDO</button>
-
-  <div id="world-modal">
-    <div id="world-card">
-      <h2>Nuevo mundo</h2>
-      <p>Cada semilla crea el mismo terreno, biomas, caminos, aldeas, cuevas y ciudades. Guarda una semilla si quieres regresar exactamente a ese mundo.</p>
-      <input id="seed-input" inputmode="text" autocomplete="off" placeholder="Ej. 583271 o CANAAN" />
-      <div class="world-actions">
-        <button id="seed-use">CREAR</button>
-        <button id="seed-random" class="secondary">ALEATORIA</button>
-        <button id="seed-close" class="secondary">CANCELAR</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="hud">
-    <div id="stats" class="panel"></div>
-    <div id="orders" class="panel"></div>
-    <div id="message" class="panel"></div>
-    <div id="crosshair"></div>
-    <div id="help" class="panel">
-      <b>WASD</b> mover · <b>Shift</b> correr · <b>E</b> reclutar/montar · <b>F</b> atacar · <b>Q</b> cambiar grupo · <b>V</b> formación · <b>T</b> seguir · <b>H</b> mantener · <b>R</b> retirada · <b>1–4</b> quién te sigue · botón derecho: cámara
-    </div>
-    <div id="mobile-ui">
-      <div id="camera-hint">Arrastra la pantalla<br>para girar cámara</div>
-      <div id="orientation-hint">Funciona en vertical, pero las batallas con ejército se juegan mejor con el teléfono en <b>horizontal</b>.</div>
-      <div id="joystick-zone" aria-label="Movimiento">
-        <div id="joystick-base"></div>
-        <div id="joystick-stick"></div>
-      </div>
-      <div id="action-cluster">
-        <button id="btn-attack" class="touch-btn" aria-label="Atacar">ATACAR</button>
-        <button id="btn-interact" class="touch-btn" aria-label="Interactuar">ACCIÓN</button>
-        <button id="btn-retreat" class="touch-btn" aria-label="Retirada">RETIRADA</button>
-        <button id="btn-run" class="touch-btn" aria-label="Correr">CORRER</button>
-      </div>
-      <div id="battle-bar" aria-label="Mando del ejército">
-        <button id="btn-group" class="battle-btn">GRUPO TODOS</button>
-        <button id="btn-formation" class="battle-btn">FORMA LÍNEA</button>
-        <button id="btn-follow-army" class="battle-btn">SEGUIR</button>
-        <button id="btn-hold" class="battle-btn">MANTENER</button>
-      </div>
-      <div id="mobile-orders" aria-label="Órdenes de seguimiento del pueblo">
-        <button class="order-btn active" data-follow="people">GENTE</button>
-        <button class="order-btn" data-follow="livestock">GANADO</button>
-        <button class="order-btn" data-follow="all">TODOS</button>
-        <button class="order-btn" data-follow="none">NADIE</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    (() => {
-      const modal = document.getElementById('world-modal');
-      const input = document.getElementById('seed-input');
-      const current = new URLSearchParams(location.search).get('seed');
-      if (current) input.value = current;
-      const open = () => { modal.classList.add('open'); input.focus(); input.select(); };
-      const close = () => modal.classList.remove('open');
-      const go = value => {
-        const seed = String(value || '').trim() || String(Math.floor(Date.now() % 1000000000));
-        location.href = `${location.pathname}?seed=${encodeURIComponent(seed)}`;
-      };
-      document.getElementById('world-button').addEventListener('click', open);
-      document.getElementById('seed-close').addEventListener('click', close);
-      document.getElementById('seed-use').addEventListener('click', () => go(input.value));
-      document.getElementById('seed-random').addEventListener('click', () => {
-        const a = new Uint32Array(1); crypto.getRandomValues(a); go(a[0] % 1000000000);
-      });
-      input.addEventListener('keydown', e => { if (e.key === 'Enter') go(input.value); });
-      modal.addEventListener('pointerdown', e => { if (e.target === modal) close(); });
-    })();
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.min.js"></script>
-  <script src="world.js?v=0.4"></script>
-  <script src="engine04.js?v=0.4"></script>
-  <script src="army04.js?v=0.4"></script>
-  <script src="main04.js?v=0.4"></script>
-</body>
-</html>
+<div id="startup"><div class="card"><strong>WILDERNESS 0.5.1</strong><small id="startup-text">Preparando el mundo…</small></div></div>
+<button id="world-button">NUEVO MUNDO</button>
+<div id="world-modal"><div id="world-card"><h2>Nuevo mundo</h2><p>Escribe una semilla o crea una aleatoria.</p><input id="seed-input" placeholder="Ej. CANAAN"><div class="world-actions"><button id="seed-use">CREAR</button><button id="seed-random" class="secondary">ALEATORIA</button><button id="seed-close" class="secondary">CANCELAR</button></div></div></div>
+<div id="hud"><div id="stats" class="panel"></div><div id="orders" class="panel"></div><div id="message" class="panel"></div><div id="help" class="panel"><b>WASD</b> mover · <b>E</b> acción · <b>F</b> atacar · <b>Q</b> grupo · <b>V</b> formación · <b>T</b> seguir · <b>H</b> mantener · <b>R</b> retirada · <b>C</b> campamento · <b>P</b> pastores</div><div id="mobile-ui"><div id="orientation-hint">Para explorar y combatir recomendamos usar el teléfono en <b>horizontal</b>.</div><div id="joystick-zone"><div id="joystick-base"></div><div id="joystick-stick"></div></div><div id="action-cluster"><button id="btn-attack" class="touch-btn">ATACAR</button><button id="btn-interact" class="touch-btn">ACCIÓN</button><button id="btn-retreat" class="touch-btn">RETIRADA</button><button id="btn-run" class="touch-btn">CORRER</button></div><div id="life-bar"><button id="btn-camp" class="life-btn">CAMPAMENTO</button><button id="btn-shepherds" class="life-btn">PASTORES</button></div><div id="battle-bar"><button id="btn-group" class="battle-btn">GRUPO TODOS</button><button id="btn-formation" class="battle-btn">FORMA LÍNEA</button><button id="btn-follow-army" class="battle-btn">SEGUIR</button><button id="btn-hold" class="battle-btn">MANTENER</button></div><div id="mobile-orders"><button class="order-btn active" data-follow="people">GENTE</button><button class="order-btn" data-follow="livestock">GANADO</button><button class="order-btn" data-follow="all">TODOS</button><button class="order-btn" data-follow="none">NADIE</button></div></div></div>
+<script>
+(()=>{const modal=document.getElementById('world-modal'),input=document.getElementById('seed-input');const current=new URLSearchParams(location.search).get('seed');if(current)input.value=current;const go=v=>{const seed=String(v||'').trim()||String(Date.now()%1e9|0);location.href=location.pathname+'?seed='+encodeURIComponent(seed)};document.getElementById('world-button').onclick=()=>modal.classList.add('open');document.getElementById('seed-close').onclick=()=>modal.classList.remove('open');document.getElementById('seed-use').onclick=()=>go(input.value);document.getElementById('seed-random').onclick=()=>{const a=new Uint32Array(1);crypto.getRandomValues(a);go(a[0]%1e9)};input.onkeydown=e=>{if(e.key==='Enter')go(input.value)};
+const startup=document.getElementById('startup'),text=document.getElementById('startup-text');function fail(msg){startup.classList.add('error');text.textContent=msg+' Recarga la página. Si continúa, avísame indicando este mensaje.'}window.addEventListener('error',e=>fail('Error de inicio: '+(e.message||'desconocido')));window.addEventListener('unhandledrejection',e=>fail('Error de ejecución: '+(e.reason?.message||e.reason||'desconocido')));
+function load(src){return new Promise((ok,bad)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>bad(new Error('No se pudo cargar '+src));document.body.appendChild(s)})}async function boot(){try{text.textContent='Cargando motor 3D…';try{await load('https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.min.js')}catch(_){text.textContent='Usando servidor alternativo…';await load('https://unpkg.com/three@0.167.1/build/three.min.js')}if(!window.THREE)throw new Error('Three.js no está disponible');text.textContent='Generando mundo…';await load('world.js?v=051');await load('engine04.js?v=051');await load('army04.js?v=051');await load('main04.js?v=051');await load('camp05.js?v=051');setTimeout(()=>{startup.style.display='none'},350)}catch(e){fail(e.message)}}boot();})();
+</script>
+</body></html>
