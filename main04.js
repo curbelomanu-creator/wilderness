@@ -91,3 +91,9 @@ function animate() {
 animate();
 addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1 : 1.5)); });
 flash(`Wilderness 0.4 · Forma un ejército de hasta ${MAX_FOLLOWERS} hombres y usa grupos, formaciones, arqueros y caballería.`, 5200);
+
+// Load 0.5 nomadic-life systems after the 0.4 core is running.
+const campScript05 = document.createElement('script');
+campScript05.src = `camp05.js?v=0.5.0`;
+campScript05.onerror = () => flash('No se pudo cargar el módulo de campamento 0.5.', 4000);
+document.body.appendChild(campScript05);
