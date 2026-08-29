@@ -1,2 +1,2 @@
-// Wilderness 4.5.2 final visual/version layer
-(()=>{document.title='Wilderness — 4.5.2';const st=document.querySelector('#startup strong');if(st)st.textContent='WILDERNESS 4.5.2';const s=document.createElement('style');s.textContent=`#stats.panel:before{content:'WILDERNESS 4.5.2';display:block;color:#fff0b8;font-weight:900;letter-spacing:.08em;margin-bottom:4px}#stats.panel b:first-child{display:none}`;document.head.appendChild(s);})();
+// Wilderness 4.6 final visual/version layer
+(()=>{document.title='Wilderness — 4.6';const st=document.querySelector('#startup strong');if(st)st.textContent='WILDERNESS 4.6';const s=document.createElement('style');s.textContent=`#stats.panel:before{content:'WILDERNESS 4.6';display:block;color:#fff0b8;font-weight:900;letter-spacing:.08em;margin-bottom:4px}#stats.panel b:first-child{display:none}`;document.head.appendChild(s);})();
