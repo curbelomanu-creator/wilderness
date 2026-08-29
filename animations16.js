@@ -1,12 +1,21 @@
-(() => {
+(()=>{
 const T=window.THREE;if(!T||typeof player==='undefined')return;
 const S={entities:new WeakMap(),time:0};
-function state(e){let s=S.entities.get(e);if(!s){s={last:e.mesh.position.clone(),speed:0,hit:0,dead:0,phase:(e.mesh.id||0)*.73};S.entities.set(e,s)}return s}
-function people(){const a=[player];if(typeof civilians!=='undefined')a.push(...civilians);if(typeof followers!=='undefined')a.push(...followers);if(typeof enemies!=='undefined')a.push(...enemies);return [...new Set(a)].filter(e=>e?.mesh&&e.actor)}
+function state(e){let s=S.entities.get(e);if(!s){s={last:e.mesh.position.clone(),speed:0,phase:(e.mesh.id||0)*.73};S.entities.set(e,s)}return s}
+function people(){const a=[player];if(typeof civilians!=='undefined')a.push(...civilians);if(typeof followers!=='undefined')a.push(...followers);if(typeof enemies!=='undefined')a.push(...enemies);return[...new Set(a)].filter(e=>e?.mesh&&e.actor)}
 function animals(){return typeof livestock!=='undefined'?livestock.filter(a=>a?.mesh):[]}
-function humanoid(e,dt,t){const s=state(e);const moved=e.mesh.position.distanceTo(s.last),spd=moved/Math.max(dt,.001);s.speed=s.speed*.72+spd*.28;s.last.copy(e.mesh.position);if(!e.alive){s.dead=Math.min(1,s.dead+dt*2.8);e.mesh.rotation.z+=(Math.PI/2-e.mesh.rotation.z)*Math.min(1,dt*7);e.actor.position.y=-.12*s.dead;return}if(e.__hitPulse>0||e.__hit16>0){s.hit=Math.min(.18,(s.hit||0)+dt);e.actor.rotation.z=Math.sin(t*45+s.phase)*.10}else if(!e.__swing15&&!e.__bow15)e.actor.rotation.z*=Math.max(0,1-dt*8);const moving=s.speed>.35;const run=s.speed>5.8;const amp=run?.105:.065,freq=run?14:9;if(moving&&!e.__swing15&&!e.__bow15){e.actor.position.y=Math.sin(t*freq+s.phase)*amp;const lean=Math.min(.12,s.speed*.012);e.actor.rotation.x+=(lean-e.actor.rotation.x)*Math.min(1,dt*8)}else if(!e.__swing15&&!e.__bow15){e.actor.position.y*=Math.max(0,1-dt*8);e.actor.rotation.x*=Math.max(0,1-dt*7)}if(e.__arms15&&!e.__swing15&&!e.__bow15&&moving){const swing=Math.sin(t*freq+s.phase)*(run?.42:.27);e.__arms15.left.rotation.x+=(swing-e.__arms15.left.rotation.x)*Math.min(1,dt*12);e.__arms15.right.rotation.x+=(-swing-e.__arms15.right.rotation.x)*Math.min(1,dt*12)}}
-function animateAnimal(a,dt,t){if(!a.alive)return;const s=state(a);const moved=a.mesh.position.distanceTo(s.last),spd=moved/Math.max(dt,.001);s.speed=s.speed*.7+spd*.3;s.last.copy(a.mesh.position);if(s.speed<.3)return;const freq=s.speed>5?13:8,amp=a.type==='horse'||a.type==='camel'?.08:.045;a.mesh.rotation.z=Math.sin(t*freq+s.phase)*.025;a.mesh.position.y+=Math.abs(Math.sin(t*freq+s.phase))*amp}
-function mountedMotion(dt,t){if(typeof mounted==='undefined'||!mounted||!mount)return;const speed=state(mount).speed;if(speed>.4){const f=speed>6?14:9;player.actor.position.y=1.25+Math.abs(Math.sin(t*f))*.12;player.actor.rotation.x=Math.sin(t*f)*.035}}
-if(typeof damage==='function'){const old=damage;damage=function(e,a){if(e)e.__hit16=.16;const alive=e?.alive;const r=old(e,a);if(alive&&e&&!e.alive)e.__death16=1;return r}}
-let last=performance.now();function loop(now){const dt=Math.min(.045,(now-last)/1000||0);last=now;const t=now/1000;S.time=t;for(const e of people()){if(e.__hit16)e.__hit16=Math.max(0,e.__hit16-dt);humanoid(e,dt,t)}for(const a of animals())animateAnimal(a,dt,t);mountedMotion(dt,t);requestAnimationFrame(loop)}requestAnimationFrame(loop);window.WildernessAnimations16=S;
+function humanoid(e,dt,t){const s=state(e),now=e.mesh.position.clone(),dx=now.x-s.last.x,dz=now.z-s.last.z,moved=Math.hypot(dx,dz),spd=moved/Math.max(dt,.001);s.speed=s.speed*.70+spd*.30;s.last.copy(now);
+if(!e.alive){e.mesh.rotation.z+=(Math.PI/2-e.mesh.rotation.z)*Math.min(1,dt*8);return}
+// Keep torso visually fixed: no side-to-side sway and no artificial vertical bob.
+e.actor.rotation.z=0;e.actor.rotation.y=0;e.actor.position.x=0;e.actor.position.z=0;if(typeof mounted==='undefined'||!mounted||e!==player)e.actor.position.y=0;
+const moving=s.speed>.28&&!e.__swing15&&!e.__bow15;
+// Orient the whole character to the actual direction of travel, preventing sideways walking.
+if(moving&&moved>.0015){const desired=Math.atan2(dx,dz);let d=desired-e.mesh.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));e.mesh.rotation.y+=d*Math.min(1,dt*16)}
+const run=s.speed>6.1,freq=run?12.5:8.5,amp=run?.70:.48,cycle=Math.sin(t*freq+s.phase);
+if(e.__legs15){const targetL=moving?cycle*amp:0,targetR=-targetL;e.__legs15.left.rotation.x+=(targetL-e.__legs15.left.rotation.x)*Math.min(1,dt*14);e.__legs15.right.rotation.x+=(targetR-e.__legs15.right.rotation.x)*Math.min(1,dt*14)}
+if(e.__arms15&&!e.__swing15&&!e.__bow15){const arm=moving?cycle*(run?.56:.38):0;e.__arms15.left.rotation.x+=(arm-e.__arms15.left.rotation.x)*Math.min(1,dt*14);e.__arms15.right.rotation.x+=(-arm-e.__arms15.right.rotation.x)*Math.min(1,dt*14);e.__arms15.left.rotation.z*=Math.max(0,1-dt*14);e.__arms15.right.rotation.z*=Math.max(0,1-dt*14)}
+}
+function animateAnimal(a,dt,t){if(!a.alive)return;const s=state(a),moved=a.mesh.position.distanceTo(s.last),spd=moved/Math.max(dt,.001);s.speed=s.speed*.7+spd*.3;s.last.copy(a.mesh.position);a.mesh.rotation.z*=Math.max(0,1-dt*12);if(s.speed<.3)return;const freq=s.speed>5?12:8,amp=(a.type==='horse'||a.type==='camel')?.065:.035;a.mesh.position.y=W.groundY(a.mesh.position.x,a.mesh.position.z)+Math.abs(Math.sin(t*freq+s.phase))*amp}
+function mountedMotion(t){if(typeof mounted==='undefined'||!mounted||!mount)return;player.actor.position.y=mount.type==='camel'?1.95:1.60;player.actor.rotation.z=0;player.actor.rotation.x=0}
+let last=performance.now();function loop(now){const dt=Math.min(.045,(now-last)/1000||0);last=now;const t=now/1000;S.time=t;for(const e of people())humanoid(e,dt,t);for(const a of animals())animateAnimal(a,dt,t);mountedMotion(t);requestAnimationFrame(loop)}requestAnimationFrame(loop);window.WildernessAnimations16=S;
 })();
