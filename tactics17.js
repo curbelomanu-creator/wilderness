@@ -1,0 +1,25 @@
+(() => {
+const T=window.THREE,W=window.WildernessWorld;if(!T||!W||typeof player==='undefined'||typeof followers==='undefined')return;
+const mobile=matchMedia('(pointer:coarse)').matches||innerWidth<=820;
+const S={placing:false,lastPoint:null,mode:'position'};
+const ray=new T.Raycaster(),ndc=new T.Vector2(),plane=new T.Plane(new T.Vector3(0,1,0),0),hit=new T.Vector3();
+const markerMat=new T.MeshBasicMaterial({color:0xe5c06a,transparent:true,opacity:.85,side:T.DoubleSide,depthWrite:false});
+let marker=null;
+function selected(){return followers.filter(f=>f.alive&&(selectedGroup==='all'||f.role===selectedGroup))}
+function groupName(){return typeof roleLabels!=='undefined'?roleLabels[selectedGroup]:selectedGroup}
+function markerAt(p){if(marker){scene.remove(marker);marker.geometry.dispose()}marker=new T.Mesh(new T.RingGeometry(1.1,1.5,24),markerMat);marker.rotation.x=-Math.PI/2;marker.position.set(p.x,W.groundY(p.x,p.z)+.08,p.z);scene.add(marker);setTimeout(()=>{if(marker){scene.remove(marker);marker.geometry.dispose();marker=null}},3200)}
+function offsetsFor(arr,center){const forward=new T.Vector3(Math.sin(player.mesh.rotation.y),0,Math.cos(player.mesh.rotation.y));const right=new T.Vector3(forward.z,0,-forward.x);return arr.map((f,i)=>{const n=arr.length;let lateral=(i-(n-1)/2)*1.8,depth=0;if(formation==='column'){const cols=Math.min(4,n),row=Math.floor(i/cols),col=i%cols;lateral=(col-(cols-1)/2)*1.9;depth=row*2.0}else if(formation==='wedge'){const row=Math.floor(i/2);lateral=(i%2?1:-1)*(1+row*1.25);depth=row*1.25}return center.clone().addScaledVector(right,lateral).addScaledVector(forward,-depth)})}
+function moveGroup(center,label='MOVER'){const arr=selected();if(!arr.length){flash('No tienes unidades seleccionadas.');return}const slots=offsetsFor(arr,center);arr.forEach((f,i)=>{f.order='hold';f.holdPos=slots[i];f.retreat=0;f.__tactical17=true});S.lastPoint=center.clone();markerAt(center);flash(`${groupName()}: ${label} a posición.`,1800)}
+function groundFromEvent(e){const r=renderer.domElement.getBoundingClientRect();ndc.x=((e.clientX-r.left)/r.width)*2-1;ndc.y=-((e.clientY-r.top)/r.height)*2+1;ray.setFromCamera(ndc,camera);plane.constant=-W.groundY(player.mesh.position.x,player.mesh.position.z);if(!ray.ray.intersectPlane(plane,hit))return null;return new T.Vector3(hit.x,W.groundY(hit.x,hit.z),hit.z)}
+function startPlacement(){S.placing=true;flash(`${groupName()}: toca una posición del terreno.`,2300);if(btnMove)btnMove.classList.add('active')}
+function flank(side){const arr=selected();if(!arr.length)return flash('No tienes unidades seleccionadas.');const hostiles=typeof enemies!=='undefined'?enemies.filter(e=>e.alive&&e.mesh.position.distanceTo(player.mesh.position)<55):[];if(!hostiles.length)return flash('No hay enemigo cercano para flanquear.');const c=new T.Vector3();hostiles.forEach(e=>c.add(e.mesh.position));c.multiplyScalar(1/hostiles.length);const to=c.clone().sub(player.mesh.position);to.y=0;if(to.lengthSq()<.1)return;to.normalize();const right=new T.Vector3(to.z,0,-to.x);const target=c.clone().addScaledVector(right,side*14).addScaledVector(to,-4);target.y=W.groundY(target.x,target.z);moveGroup(target,side<0?'FLANCO IZQUIERDO':'FLANCO DERECHO')}
+function advance(){const fwd=new T.Vector3(Math.sin(player.mesh.rotation.y),0,Math.cos(player.mesh.rotation.y));const c=player.mesh.position.clone().addScaledVector(fwd,18);c.y=W.groundY(c.x,c.z);moveGroup(c,'AVANZAR')}
+function reform(){const arr=selected();arr.forEach(f=>{f.order='follow';f.holdPos=null;f.__tactical17=false});flash(`${groupName()}: reagruparse conmigo.`,1600)}
+renderer.domElement.addEventListener('pointerup',e=>{if(!S.placing)return;if(mobile&&e.pointerType!=='touch'&&e.pointerType!=='pen')return;const p=groundFromEvent(e);S.placing=false;if(btnMove)btnMove.classList.remove('active');if(p)moveGroup(p);e.preventDefault()},true);
+addEventListener('keydown',e=>{if(e.repeat)return;if(e.code==='KeyG')startPlacement();if(e.code==='KeyZ')flank(-1);if(e.code==='KeyX')flank(1);if(e.code==='KeyY')advance();if(e.code==='KeyU')reform()});
+const bar=document.createElement('div');bar.id='tactics17';bar.style.cssText='position:fixed;z-index:31;left:50%;bottom:'+(mobile?'112px':'12px')+';transform:translateX(-50%);display:flex;gap:4px;pointer-events:auto;white-space:nowrap';document.body.appendChild(bar);
+function button(txt,fn){const b=document.createElement('button');b.textContent=txt;b.style.cssText='border:1px solid #e8c985;background:#342315dd;color:#fff0cf;border-radius:7px;padding:'+(mobile?'6px 7px':'7px 9px')+';font:800 '+(mobile?'7px':'9px')+' ui-monospace,monospace;touch-action:none';b.addEventListener('pointerdown',e=>{e.preventDefault();fn()});bar.appendChild(b);return b}
+const btnMove=button('POSICIÓN',startPlacement);button('AVANZAR',advance);button('FLANCO ◀',()=>flank(-1));button('FLANCO ▶',()=>flank(1));button('REAGRUPAR',reform);
+if(!mobile)bar.style.bottom='44px';
+window.WildernessTactics17={state:S,moveGroup,flank,advance,reform};
+})();
