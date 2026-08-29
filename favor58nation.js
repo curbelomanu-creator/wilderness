@@ -1,0 +1,2 @@
+// Wilderness 5.8 - synchronize nation selection with Favor access
+(()=>{const N=window.WildernessNations50,F=window.WildernessFavor58;if(!N||!F)return;let doneFor=null;function sync(){const id=N.state?.nation;if(!id||!N.state?.selected)return;if(id===doneFor)return;doneFor=id;if(id==='israel'||id==='judah'){F.state.unlocked=true;if(typeof F.favor==='function')F.favor();} }sync();setInterval(sync,250)})();
