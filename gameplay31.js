@@ -56,9 +56,10 @@
   const baseMakeAnimal=makeAnimal;
   makeAnimal=function(type,x,z,owned=false){const a=baseMakeAnimal(type,x,z,owned);scaleMount(a);return a};
 
-  // Corrige altura del jinete después del loop principal.
+  // Legacy fallback only. animals44.js owns the actual seated riding pose once loaded.
   function mountHeight(){
     if(G.dead||!mounted||!mount)return;
+    if(window.WildernessAnimals44||window.WildernessMountMotion5102)return;
     scaleMount(mount);
     const y=W.groundY(player.mesh.position.x,player.mesh.position.z);
     player.mesh.position.y=y+(mount.type==='camel'?2.75:2.05);
