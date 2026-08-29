@@ -1,60 +1,18 @@
 // Wilderness 4.5 - solid structures, rocks, NPCs and animals
 (()=>{
-const T=window.THREE,W=window.WildernessWorld;
-if(!T||!W||typeof scene==='undefined'||typeof player==='undefined'||typeof updatePlayer!=='function')return;
-const C={boxes:[],lastScan:0,lastCenter:new T.Vector3(1e9,0,1e9),safe:new WeakMap()};
-const wp=new T.Vector3(),size=new T.Vector3(),box=new T.Box3();
+const T=window.THREE,W=window.WildernessWorld;if(!T||!W||typeof scene==='undefined'||typeof player==='undefined'||typeof updatePlayer!=='function')return;
+const C={boxes:[],lastScan:0,lastCenter:new T.Vector3(1e9,0,1e9),safe:new WeakMap()},wp=new T.Vector3(),size=new T.Vector3(),box=new T.Box3();
 function visibleChain(o){for(let p=o;p&&p!==scene;p=p.parent)if(p.visible===false)return false;return true}
 function dynamicRoots(){const s=new Set([player.mesh]);if(typeof civilians!=='undefined')for(const e of civilians)if(e?.mesh)s.add(e.mesh);if(typeof followers!=='undefined')for(const e of followers)if(e?.mesh)s.add(e.mesh);if(typeof enemies!=='undefined')for(const e of enemies)if(e?.mesh)s.add(e.mesh);if(typeof livestock!=='undefined')for(const e of livestock)if(e?.mesh)s.add(e.mesh);if(typeof L06!=='undefined')for(const c of L06.caravans||[])if(c?.g)s.add(c.g);return s}
 function underRoot(o,roots){for(let p=o;p&&p!==scene;p=p.parent)if(roots.has(p))return true;return false}
-function terrainLike(o){for(let p=o;p&&p!==scene;p=p.parent){const n=p.name||'';if(n.startsWith('terrain41-'))return true}return false}
-function rebuild(){
-  const p=player.mesh.position;if(performance.now()-C.lastScan<800&&p.distanceToSquared(C.lastCenter)<18*18)return;
-  C.lastScan=performance.now();C.lastCenter.copy(p);C.boxes.length=0;const roots=dynamicRoots();
-  scene.updateMatrixWorld(true);
-  scene.traverse(o=>{
-    if(!o?.isMesh||o.isInstancedMesh||!visibleChain(o)||underRoot(o,roots)||terrainLike(o))return;
-    if(o.material?.transparent&&o.material?.opacity<.9)return;
-    o.getWorldPosition(wp);if(Math.hypot(wp.x-p.x,wp.z-p.z)>105)return;
-    box.setFromObject(o);if(box.isEmpty())return;box.getSize(size);
-    if(size.x>36||size.z>36||size.y<.16)return;
-    // Ignore flat roads/plazas and tiny grass, but keep posts, walls, tents, rocks and trees.
-    if(size.y<.30&&Math.max(size.x,size.z)>1.5)return;
-    if(size.x<.30&&size.z<.30&&size.y<1.45)return;
-    const cx=(box.min.x+box.max.x)/2,cz=(box.min.z+box.max.z)/2,ground=W.groundY(cx,cz);
-    // Elevated roofs/awnings can be walked beneath. Sloping tent fabric reaches near ground and stays solid.
-    if(box.min.y>ground+1.05)return;
-    const b=box.clone();b.min.x-=.16;b.max.x+=.16;b.min.z-=.16;b.max.z+=.16;C.boxes.push(b);
-  });
-}
+function terrainLike(o){for(let p=o;p&&p!==scene;p=p.parent)if((p.name||'').startsWith('terrain41-'))return true;return false}
+function rebuild(){const p=player.mesh.position;if(performance.now()-C.lastScan<800&&p.distanceToSquared(C.lastCenter)<324)return;C.lastScan=performance.now();C.lastCenter.copy(p);C.boxes.length=0;const roots=dynamicRoots();scene.updateMatrixWorld(true);scene.traverse(o=>{if(!o?.isMesh||o.isInstancedMesh||!visibleChain(o)||underRoot(o,roots)||terrainLike(o))return;if(o.material?.transparent&&o.material?.opacity<.9)return;o.getWorldPosition(wp);if(Math.hypot(wp.x-p.x,wp.z-p.z)>105)return;box.setFromObject(o);if(box.isEmpty())return;box.getSize(size);if(size.x>36||size.z>36||size.y<.16)return;if(size.y<.30&&Math.max(size.x,size.z)>1.5)return;if(size.x<.30&&size.z<.30&&size.y<1.45)return;const cx=(box.min.x+box.max.x)/2,cz=(box.min.z+box.max.z)/2;if(box.min.y>W.groundY(cx,cz)+1.05)return;const b=box.clone();b.min.x-=.16;b.max.x+=.16;b.min.z-=.16;b.max.z+=.16;C.boxes.push(b)})}
 function staticBlocked(pos,r=.48){for(const b of C.boxes)if(pos.x+r>b.min.x&&pos.x-r<b.max.x&&pos.z+r>b.min.z&&pos.z-r<b.max.z)return true;return false}
 function radiusOf(e){if(e===player)return mounted&&mount?1.02:.48;switch(e?.type){case'horse':return 1.05;case'camel':return 1.12;case'lion':return .76;case'sheep':case'goat':return .56;case'cow':return .82;case'donkey':return .78;default:return .48}}
-function livingEntities(){const arr=[];if(typeof civilians!=='undefined')arr.push(...civilians);if(typeof followers!=='undefined')arr.push(...followers);if(typeof enemies!=='undefined')arr.push(...enemies);if(typeof livestock!=='undefined')arr.push(...livestock);return[...new Set(arr)].filter(e=>e&&e!==player&&e.alive!==false&&e.mesh&&e!==mount)}
-function dynamicBlocked(pos,r){
-  for(const e of livingEntities()){const q=e.mesh.position,rr=r+radiusOf(e);if((pos.x-q.x)**2+(pos.z-q.z)**2<rr*rr)return true}
-  if(typeof L06!=='undefined')for(const c of L06.caravans||[]){if(!c?.g?.visible)continue;const q=c.g.position,rr=r+2.35;if((pos.x-q.x)**2+(pos.z-q.z)**2<rr*rr)return true}
-  return false;
-}
-// Wrap player movement after all previous movement/city-wall logic.
-const baseUpdate45=updatePlayer;
-updatePlayer=function(dt){
-  rebuild();const before=player.mesh.position.clone();baseUpdate45(dt);const r=radiusOf(player);
-  if(staticBlocked(player.mesh.position,r)||dynamicBlocked(player.mesh.position,r)){
-    player.mesh.position.x=before.x;player.mesh.position.z=before.z;
-    if(mounted&&mount){mount.mesh.position.x=before.x;mount.mesh.position.z=before.z}
-  }
-};
+function livingEntities(){const a=[];if(typeof civilians!=='undefined')a.push(...civilians);if(typeof followers!=='undefined')a.push(...followers);if(typeof enemies!=='undefined')a.push(...enemies);if(typeof livestock!=='undefined')a.push(...livestock);return[...new Set(a)].filter(e=>e&&e!==player&&e.alive!==false&&e.mesh&&e!==mount)}
+function dynamicBlocked(pos,r){for(const e of livingEntities()){const q=e.mesh.position,rr=r+radiusOf(e);if((pos.x-q.x)**2+(pos.z-q.z)**2<rr*rr)return true}if(typeof L06!=='undefined')for(const c of L06.caravans||[]){if(!c?.g?.visible)continue;const q=c.g.position,rr=r+2.35;if((pos.x-q.x)**2+(pos.z-q.z)**2<rr*rr)return true}return false}
+const baseUpdate45=updatePlayer;updatePlayer=function(dt){rebuild();const before=player.mesh.position.clone(),r0=radiusOf(player),wasStatic=staticBlocked(before,r0),wasDynamic=dynamicBlocked(before,r0);baseUpdate45(dt);const r=radiusOf(player),nowStatic=staticBlocked(player.mesh.position,r),nowDynamic=dynamicBlocked(player.mesh.position,r);if((!wasStatic&&nowStatic)||(!wasDynamic&&nowDynamic)){player.mesh.position.x=before.x;player.mesh.position.z=before.z;if(mounted&&mount){mount.mesh.position.x=before.x;mount.mesh.position.z=before.z}}};
 function enforceStatic(e){if(!e?.mesh||e===mount)return;const p=e.mesh.position,r=radiusOf(e),prev=C.safe.get(e);if(staticBlocked(p,r)){if(prev){p.x=prev.x;p.z=prev.z;p.y=W.groundY(p.x,p.z)}}else C.safe.set(e,p.clone())}
-function separate(){
-  const es=[player,...livingEntities()];
-  for(let i=0;i<es.length;i++)for(let j=i+1;j<es.length;j++){
-    const a=es[i],b=es[j];if((a===player&&b===mount)||(b===player&&a===mount))continue;
-    const ap=a.mesh.position,bp=b.mesh.position,dx=bp.x-ap.x,dz=bp.z-ap.z,min=radiusOf(a)+radiusOf(b),d2=dx*dx+dz*dz;if(d2<=.0001||d2>=min*min)continue;
-    const d=Math.sqrt(d2),nx=dx/d,nz=dz/d,push=(min-d)*.52;
-    if(a!==player&&a!==mount){const nxp=ap.x-nx*push,nzp=ap.z-nz*push,tmp=new T.Vector3(nxp,ap.y,nzp);if(!staticBlocked(tmp,radiusOf(a))){ap.x=nxp;ap.z=nzp}}
-    if(b!==player&&b!==mount){const nxp=bp.x+nx*push,nzp=bp.z+nz*push,tmp=new T.Vector3(nxp,bp.y,nzp);if(!staticBlocked(tmp,radiusOf(b))){bp.x=nxp;bp.z=nzp}}
-  }
-}
-let last=0;function loop(t){rebuild();if(t-last>45){last=t;for(const e of livingEntities())enforceStatic(e);separate()}requestAnimationFrame(loop)}requestAnimationFrame(loop);
-window.WildernessCollision45={state:C,rebuild,staticBlocked,dynamicBlocked};
+function separate(){const es=[player,...livingEntities()];for(let i=0;i<es.length;i++)for(let j=i+1;j<es.length;j++){const a=es[i],b=es[j];if((a===player&&b===mount)||(b===player&&a===mount))continue;const ap=a.mesh.position,bp=b.mesh.position,dx=bp.x-ap.x,dz=bp.z-ap.z,min=radiusOf(a)+radiusOf(b),d2=dx*dx+dz*dz;if(d2<=.0001||d2>=min*min)continue;const d=Math.sqrt(d2),nx=dx/d,nz=dz/d,push=(min-d)*.52;if(a!==player&&a!==mount){const x=ap.x-nx*push,z=ap.z-nz*push,tmp=new T.Vector3(x,ap.y,z);if(!staticBlocked(tmp,radiusOf(a))){ap.x=x;ap.z=z}}if(b!==player&&b!==mount){const x=bp.x+nx*push,z=bp.z+nz*push,tmp=new T.Vector3(x,bp.y,z);if(!staticBlocked(tmp,radiusOf(b))){bp.x=x;bp.z=z}}}}
+let last=0;function loop(t){rebuild();if(t-last>45){last=t;for(const e of livingEntities())enforceStatic(e);separate()}requestAnimationFrame(loop)}requestAnimationFrame(loop);window.WildernessCollision45={state:C,rebuild,staticBlocked,dynamicBlocked};
 })();
