@@ -7,21 +7,19 @@ const bladeMat=new T.MeshLambertMaterial({color:0xb9b8b1,flatShading:true});
 const hiltMat=new T.MeshLambertMaterial({color:0x7b5a31,flatShading:true});
 const gripMat=new T.MeshLambertMaterial({color:0x36251a,flatShading:true});
 function locked(){return !N.state?.selected||!!window.WildernessNationSelectionOpen}
-function makeSword(e){
- if(!e?.actor||e.type==='lion'||e===player||P.swords.has(e))return;
+function ensureSword(e){
+ if(!e?.actor||e.type==='lion'||e===player)return;
+ e.role='infantry';e.__meleeOnly5101=true;
  if(e.equipment)e.equipment.visible=false;
  if(e.cavalryHorse){try{e.mesh.remove(e.cavalryHorse)}catch(_){ }e.cavalryHorse=null;e.actor.position.y=0}
- e.role='infantry';
- const g=new T.Group();g.name='enemy-sword-5101';g.position.set(.72,1.55,.08);g.rotation.z=-.18;
+ let g=P.swords.get(e);if(g){g.visible=true;return}
+ g=new T.Group();g.name='enemy-sword-5101';g.position.set(.72,1.55,.08);g.rotation.z=-.18;
  const blade=new T.Mesh(new T.BoxGeometry(.13,2.05,.15),bladeMat);blade.position.y=.75;g.add(blade);
  const cross=new T.Mesh(new T.BoxGeometry(.78,.12,.18),hiltMat);cross.position.y=-.30;g.add(cross);
  const grip=new T.Mesh(new T.BoxGeometry(.16,.62,.18),gripMat);grip.position.y=-.62;g.add(grip);
- e.actor.add(g);P.swords.set(e,g);e.__meleeOnly5101=true;
+ e.actor.add(g);P.swords.set(e,g);
 }
-function normalizeEnemies(){
- if(typeof enemies==='undefined')return;
- for(const e of enemies){if(!e?.alive||e.type==='lion')continue;if(e.role!=='infantry'||!P.swords.has(e))makeSword(e)}
-}
+function normalizeEnemies(){if(typeof enemies==='undefined')return;for(const e of enemies){if(!e?.alive||e.type==='lion')continue;ensureSword(e)}}
 // Suppress every hostile projectile while preserving friendly/player archers if they exist.
 if(typeof fireArrow==='function'){
  const baseFire=fireArrow;
