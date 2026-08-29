@@ -1,0 +1,21 @@
+(() => {
+const T=window.THREE;if(!T||typeof player==='undefined')return;
+const metal=new T.MeshLambertMaterial({color:0xc8c3ad,flatShading:true}),darkMetal=new T.MeshLambertMaterial({color:0x615e58,flatShading:true}),hair=new T.MeshLambertMaterial({color:0x342217,flatShading:true}),eye=new T.MeshBasicMaterial({color:0x17110d}),leather=new T.MeshLambertMaterial({color:0x70472d,flatShading:true}),stringMat=new T.MeshBasicMaterial({color:0xd9c9a5});
+const enhanced=new WeakSet();
+function box(p,w,h,d,m,x,y,z){const q=new T.Mesh(new T.BoxGeometry(w,h,d),m);q.position.set(x,y,z);p.add(q);return q}
+function enhance(e){if(!e?.actor||enhanced.has(e)||e.type==='lion')return;enhanced.add(e);const a=e.actor;
+// face/hair: deliberately chunky pixel-like features
+const face=new T.Group();box(face,.16,.11,.055,eye,-.17,2.94,.405);box(face,.16,.11,.055,eye,.17,2.94,.405);box(face,.13,.11,.07,mats.skin,0,2.78,.43);box(face,.28,.08,.055,hair,0,2.63,.41);box(face,.82,.20,.82,hair,0,3.22,-.02);box(face,.10,.45,.78,hair,-.39,3.02,-.02);box(face,.10,.45,.78,hair,.39,3.02,-.02);a.add(face);e.__face15=face;
+// articulated arms
+const arms=new T.Group();const lm=e.enemy?mats.enemy:mats.skin;const leftPivot=new T.Group(),rightPivot=new T.Group();leftPivot.position.set(-.62,2.2,0);rightPivot.position.set(.62,2.2,0);box(leftPivot,.24,1.18,.25,lm,0,-.48,0);box(rightPivot,.24,1.18,.25,lm,0,-.48,0);arms.add(leftPivot,rightPivot);a.add(arms);e.__arms15={left:leftPivot,right:rightPivot};
+// clearer weapon silhouettes
+const weapon=new T.Group();rightPivot.add(weapon);if(e.role==='archer'){const upper=box(weapon,.09,.9,.09,mats.bow,.18,-.85,.10);upper.rotation.z=.48;const lower=box(weapon,.09,.9,.09,mats.bow,.18,-1.45,.10);lower.rotation.z=-.48;const cord=box(weapon,.025,1.55,.025,stringMat,.39,-1.13,.10);cord.rotation.z=.02;e.__weapon15='bow'}else{const blade=box(weapon,.16,1.35,.08,metal,.12,-1.35,.08);blade.rotation.z=-.10;box(weapon,.42,.10,.12,darkMetal,.12,-.68,.08);box(weapon,.13,.55,.13,leather,.12,-.42,.08);e.__weapon15='sword'}
+}
+function all(){const arr=[player];if(typeof civilians!=='undefined')arr.push(...civilians);if(typeof followers!=='undefined')arr.push(...followers);if(typeof enemies!=='undefined')arr.push(...enemies);return [...new Set(arr)]}
+function markMelee(e){if(e)e.__swing15=.34}function markBow(e){if(e)e.__bow15=.42}
+if(typeof playerAttack==='function'){const old=playerAttack;playerAttack=function(){markMelee(player);return old()}}
+if(typeof fireArrow==='function'){const old=fireArrow;fireArrow=function(shooter,target,friendly){markBow(shooter);setTimeout(()=>{if(shooter)shooter.__release15=.12},220);return old(shooter,target,friendly)}}
+if(typeof damage==='function'){const old=damage;damage=function(e,a){if(e&&e.role!=='archer'&&e!==player){const near=e.enemy?[player,...(typeof followers!=='undefined'?followers:[])]:typeof enemies!=='undefined'?enemies:[];const attacker=near.find(x=>x?.alive&&x.mesh?.position.distanceTo(e.mesh.position)<2.4);if(attacker)markMelee(attacker)}return old(e,a)}}
+function animate(e,dt,t){enhance(e);const ar=e.__arms15;if(!ar)return;let l=0,r=0,rz=0;if(e.__swing15>0){e.__swing15=Math.max(0,e.__swing15-dt);const p=1-e.__swing15/.34;const arc=Math.sin(p*Math.PI);r=-1.55+arc*2.25;rz=-.35+arc*.75;l=.30}else if(e.__bow15>0){e.__bow15=Math.max(0,e.__bow15-dt);const draw=Math.min(1,(.42-e.__bow15)/.20);r=-1.15;l=-1.05;ar.left.rotation.z=.55*draw;ar.right.rotation.z=-.30*draw}else{const moving=e.__last15?e.mesh.position.distanceTo(e.__last15)>.015:false;if(moving){l=Math.sin(t*9+(e.mesh.id||0))*.22;r=-l*.75}}ar.left.rotation.x+=(l-ar.left.rotation.x)*.28;ar.right.rotation.x+=(r-ar.right.rotation.x)*.32;ar.right.rotation.z+=(rz-ar.right.rotation.z)*.3;e.__last15=e.mesh.position.clone()}
+let last=performance.now();function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;const t=now/1000;for(const e of all())if(e?.alive)animate(e,dt,t);requestAnimationFrame(loop)}requestAnimationFrame(loop);window.WildernessCharacters15={enhance};
+})();
