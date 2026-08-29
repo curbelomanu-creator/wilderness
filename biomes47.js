@@ -1,4 +1,4 @@
-// Wilderness 4.7 - biome vegetation, oasis pools, atmosphere and deep-water boundary
+// Wilderness 4.8 - biome vegetation, oasis pools, atmosphere and deep-water boundary
 (()=>{
 const T=window.THREE,W=window.WildernessWorld;if(!T||!W||typeof scene==='undefined'||typeof chunks==='undefined'||typeof player==='undefined')return;
 const mobile=matchMedia('(pointer:coarse)').matches||innerWidth<=820;
@@ -17,7 +17,7 @@ function decorate(cx,cz){
   const key=`${cx},${cz}`;if(B.groups.has(key))return;const g=new T.Group();g.name='biome47-'+key;scene.add(g);B.groups.set(key,g);
   const minX=cx*W.CHUNK_SIZE,minZ=cz*W.CHUNK_SIZE,count=mobile?7:13,seenOasis=new Set();
   for(let i=0;i<count;i++){
-    const x=minX+4+W.hash2i(cx,cz,4770+i*5)*(W.CHUNK_SIZE-8),z=minZ+4+W.hash2i(cx,cz,4771+i*5)*(W.CHUNK_SIZE-8);if(W.roadAt(x,z)||W.waterAt?.(x,z))continue;
+    const x=minX+4+W.hash2i(cx,cz,4770+i*5)*(W.CHUNK_SIZE-8),z=minZ+4+W.hash2i(cx,cz,4771+i*5)*(W.CHUNK_SIZE-8);if(W.roadAt(x,z)||W.waterAt?.(x,z)||W.riverAt?.(x,z))continue;
     const b=W.biomeAt(x,z),r=W.hash2i(cx,cz,4772+i*5),s=.72+W.hash2i(cx,cz,4773+i*5)*.75;
     if(b==='forest'){if(r<.52)cedar(g,x,z,s);else if(r<.88)broadTree(g,x,z,s);else shrub(g,x,z,s*.8)}
     else if(b==='grassland'){if(r<.22)broadTree(g,x,z,s*.85);else grass(g,x,z,s)}
@@ -31,7 +31,6 @@ function decorate(cx,cz){
   }
 }
 function atmosphere(){const b=W.biomeAt(player.mesh.position.x,player.mesh.position.z);if(b===B.lastBiome)return;B.lastBiome=b;const bg={sea:0x91b6bd,coast:0xb9c8b0,forest:0x8fa98b,grassland:0xa8bf91,fertile:0x9eb68c,steppe:0xb8b590,desert:0xcbb985,oasis:0x91b5a2,mountain:0xa6a9a6,rocky:0xb0aaa2}[b]||0xb8c6bd;scene.background.setHex(bg);scene.fog.color.setHex(bg);const dens={sea:.0034,coast:.0038,forest:.0054,grassland:.0041,fertile:.0043,steppe:.0042,desert:.0040,oasis:.0042,mountain:.0052,rocky:.0048}[b]||.0043;scene.fog.density=mobile?dens*1.22:dens}
-// Until swimming/boats exist, deep water is a physical boundary. Shallows remain reachable.
 if(typeof updatePlayer==='function'){
   const baseUpdate47=updatePlayer;updatePlayer=function(dt){const before=player.mesh.position.clone(),mBefore=(typeof mounted!=='undefined'&&mounted&&mount)?mount.mesh.position.clone():null;baseUpdate47(dt);if(W.deepWaterAt?.(player.mesh.position.x,player.mesh.position.z)){player.mesh.position.x=before.x;player.mesh.position.z=before.z;if(mBefore&&mount){mount.mesh.position.x=mBefore.x;mount.mesh.position.z=mBefore.z}}};
 }
