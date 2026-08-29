@@ -45,7 +45,6 @@ W.settlementsNearBounds=function(minX,maxX,minZ,maxZ,margin=20){
   return out;
 };
 if(baseSettlementDef)W.settlementDef=(cx,cz)=>{const s=baseSettlementDef(cx,cz);if(!s)return null;if(nearestHistorical(s.x,s.z,58))return null;return enrichProcedural(s)};
-// Give already-created procedural settlements a political identity too.
 function tagExisting(){if(typeof generatedSettlements==='undefined')return;for(const rt of generatedSettlements.values()){if(!rt||rt.historical)continue;const fId=territoryAt(rt.x,rt.z);if(!fId)continue;const f=N.faction(fId);rt.faction=fId;rt.nation=fId;rt.factionName=f?.display||fId;rt.factionKing=f?.king||null}}
 function ensureNearbyHistorical(){if(typeof ensureSettlement!=='function')return;const px=player.mesh.position.x,pz=player.mesh.position.z;for(const c of H.cities)if(Math.hypot(px-c.x,pz-c.z)<260)try{ensureSettlement(c)}catch(e){console.warn('historical52 ensure',c.name,e)}}
 function relationLabel(faction){if(!N.state.selected)return'SIN NACIÓN';const r=N.relationTo(faction);return({own:'PROPIA',ally:'ALIADA',friendly:'AMISTOSA',neutral:'NEUTRAL',hostile:'HOSTIL',war:'EN GUERRA'})[r]||String(r).toUpperCase()}
@@ -53,9 +52,10 @@ const card=document.createElement('div');card.id='historical52card';card.style.c
 document.body.appendChild(card);
 if(mobile){card.style.top='calc(48px + env(safe-area-inset-top,0px))';card.style.fontSize='8px';card.style.minWidth='180px'}
 function updateCard(){const n=nearestHistorical(player.mesh.position.x,player.mesh.position.z,170);H.lastNearby=n;if(!n){card.style.display='none';return}const c=n.city,f=N.faction(c.faction);card.innerHTML=`<b style="font-size:1.12em;color:#fff4c9">${c.name.toUpperCase()}</b><br>${f?.display||c.factionName}<br>Rey: <b>${c.factionKing}</b> · ${relationLabel(c.faction)}<br><span style="opacity:.72">${c.capital?'CAPITAL · ':''}${Math.round(n.d)} m</span>`;card.style.display='block'}
-// Kings are unique faction rulers. Reuse the capital runtime king if the engine created it; otherwise mark the capital for later placement.
-function syncKings(){if(typeof generatedSettlements==='undefined')return;for(const f of Object.values(N.factions)){if(H.kings.has(f.id))continue;const cap=H.cities.find(c=>c.faction===f.id&&c.capital),rt=cap&&generatedSettlements.get(cap.id);if(rt?.kingRuntime){rt.kingRuntime.faction=f.id;rt.kingRuntime.rulerName=f.king;H.kings.set(f.id,rt.kingRuntime)}}}
-function sync(){ensureNearbyHistorical();tagExisting();syncKings();updateCard()}
+// Each faction has one ruler. The capital runtime owns the physical king NPC when available.
+function syncKings(){if(typeof generatedSettlements==='undefined')return;for(const f of Object.values(N.factions)){if(H.kings.has(f.id))continue;const cap=H.cities.find(c=>c.faction===f.id&&c.capital),rt=cap&&generatedSettlements.get(cap.id);if(rt?.kingRuntime){rt.kingRuntime.faction=f.id;rt.kingRuntime.nation=f.id;rt.kingRuntime.rulerName=f.king;H.kings.set(f.id,rt.kingRuntime)}}}
+function syncPoliticalRealms(){const K=window.WildernessKingdoms;if(!K?.realms)return;for(const r of K.realms.values()){const src=r.source||r,fId=src.faction||src.nation||territoryAt(r.x,r.z);if(!fId)continue;const f=N.faction(fId);r.faction=fId;r.nation=fId;r.factionName=f?.display||fId;r.king=f?.king||r.king;if(r.source){r.source.faction=fId;r.source.nation=fId;r.source.factionKing=f?.king||r.source.factionKing}}}
+function sync(){ensureNearbyHistorical();tagExisting();syncKings();syncPoliticalRealms();updateCard()}
 let last=0;function loop(t){if(t-last>420){last=t;try{sync()}catch(e){console.warn('Wilderness 5.2 historical kingdoms',e)}}requestAnimationFrame(loop)}requestAnimationFrame(loop);
 window.WildernessHistorical52={cities:H.cities,byId:H.byId,kings:H.kings,nearestCity:nearestHistorical,territoryAt,state:H};
 })();
