@@ -1,0 +1,143 @@
+route_id,route_name,sequence,node,mode,notes
+R01,Via de Horus,1,memphis,road,Egipto-Canaan
+R01,Via de Horus,2,heliopolis,road,
+R01,Via de Horus,3,bubastis,road,
+R01,Via de Horus,4,tjaru,road,puerta oriental de Egipto
+R01,Via de Horus,5,el_arish,road,pozos y oasis
+R01,Via de Horus,6,rafah,road,frontera Sinai-Canaan
+R01,Via de Horus,7,gaza,road,empalma con Via Maris
+R01B,Delta oriental y Pi-Rames,1,tanis,road,
+R01B,Delta oriental y Pi-Rames,2,pi_ramesses,road,ruinas no nodo obligatorio
+R01B,Delta oriental y Pi-Rames,3,bubastis,road,
+R01B,Delta oriental y Pi-Rames,4,tjaru,road,
+R02,Via Maris,1,gaza,road,
+R02,Via Maris,2,ashkelon,road,
+R02,Via Maris,3,ashdod,road,
+R02,Via Maris,4,ekron,road,
+R02,Via Maris,5,gezer,road,bisagra hacia Jerusalen
+R02,Via Maris,6,SHARON_CORRIDOR,road,waypoint regional
+R02,Via Maris,7,CARMEL_PASS,road,waypoint regional
+R02,Via Maris,8,megiddo,road,llave del paso
+R02,Via Maris,9,jezreel,road,
+R02,Via Maris,10,hazor,road,
+R02,Via Maris,11,dan,road,
+R03,Serrania central,1,beersheba,road,
+R03,Serrania central,2,hebron,road,
+R03,Serrania central,3,beth_zur,road,
+R03,Serrania central,4,bethlehem,road,
+R03,Serrania central,5,jerusalem,road,
+R03,Serrania central,6,bethel,road,
+R03,Serrania central,7,shiloh,road,
+R03,Serrania central,8,shechem,road,
+R03,Serrania central,9,samaria,road,
+R03,Serrania central,10,dothan,road,
+R03,Serrania central,11,jezreel,road,
+R04A,Judah occidental norte,1,jerusalem,road,
+R04A,Judah occidental norte,2,gezer,road,
+R04A,Judah occidental norte,3,ekron,road,
+R04A,Judah occidental norte,4,ashdod,road,
+R04B,Judah occidental sur,1,jerusalem,road,
+R04B,Judah occidental sur,2,bethlehem,road,
+R04B,Judah occidental sur,3,azekah,road,
+R04B,Judah occidental sur,4,lachish,road,
+R04B,Judah occidental sur,5,gaza,road,
+R04C,Valle de Ela,1,azekah,road,
+R04C,Valle de Ela,2,gath,road,
+R04D,Laquis-Libna,1,lachish,road,
+R04D,Laquis-Libna,2,libnah,road,
+R05,Valle del Jordan,1,dan,road,
+R05,Valle del Jordan,2,HULA,road,waypoint geografico
+R05,Valle del Jordan,3,SEA_OF_GALILEE,road,waypoint geografico
+R05,Valle del Jordan,4,beth_shean,road,
+R05,Valle del Jordan,5,jericho,road,
+R05,Valle del Jordan,6,DEAD_SEA_NORTH,road,terminal geografico
+R06,Cruce norte del Jordan,1,jezreel,road,
+R06,Cruce norte del Jordan,2,beth_shean,road,
+R06,Cruce norte del Jordan,3,BETH_SHEAN_FORD,road,vado
+R06,Cruce norte del Jordan,4,ramoth_gilead,road,
+R06,Cruce norte del Jordan,5,damascus,road,
+R07,Jerusalen-Transjordania,1,jerusalem,road,
+R07,Jerusalen-Transjordania,2,jericho,road,
+R07,Jerusalen-Transjordania,3,JERICHO_FORD,road,vado
+R07,Jerusalen-Transjordania,4,heshbon,road,
+R07,Jerusalen-Transjordania,5,rabbah,road,
+R08,Camino del Rey,1,damascus,road,
+R08,Camino del Rey,2,rabbah,road,
+R08,Camino del Rey,3,heshbon,road,
+R08,Camino del Rey,4,medeba,road,
+R08,Camino del Rey,5,dibon,road,
+R08,Camino del Rey,6,aroer,road,paso del Arnon
+R08,Camino del Rey,7,kir_hareseth,road,
+R08,Camino del Rey,8,bozrah,road,
+R08,Camino del Rey,9,sela,road,paso fortificado
+R08,Camino del Rey,10,teman,road,
+R08,Camino del Rey,11,elath,road,
+R08,Camino del Rey,12,ezion_geber,road,puerto terminal
+R09,Negev-Araba,1,gaza,road,
+R09,Negev-Araba,2,beersheba,road,
+R09,Negev-Araba,3,arad,road,
+R09,Negev-Araba,4,ARABAH_NORTH,road,waypoint regional
+R09,Negev-Araba,5,punon_faynan,road,distrito minero
+R09,Negev-Araba,6,sela,road,
+R09,Negev-Araba,7,elath,road,
+R10,Costa fenicia,1,tyre,road,
+R10,Costa fenicia,2,sarepta,road,
+R10,Costa fenicia,3,sidon,road,
+R10,Costa fenicia,4,berytus,road,
+R10,Costa fenicia,5,byblos,road,
+R10,Costa fenicia,6,ARWAD_MAINLAND_EMBARKATION,road,continua por ferry
+R10,Costa fenicia,7,arwad,ferry,isla
+R10S,Costa fenicia sur,1,tyre,road,
+R10S,Costa fenicia sur,2,ACCO_CORRIDOR,road,waypoint costero
+R10S,Costa fenicia sur,3,CARMEL_PASS,road,
+R10S,Costa fenicia sur,4,megiddo,road,
+R11,Tiro-Dan,1,tyre,road,
+R11,Tiro-Dan,2,UPPER_GALILEE,road,waypoint regional
+R11,Tiro-Dan,3,dan,road,
+R12,Damasco-Fenicia,1,damascus,road,
+R12,Damasco-Fenicia,2,ANTI_LEBANON_PASS,road,paso
+R12,Damasco-Fenicia,3,BEKAA,road,waypoint regional
+R12,Damasco-Fenicia,4,LEBANON_PASS,road,paso
+R12,Damasco-Fenicia,5,berytus,road,
+R12B,Bekaa-Sidon,1,BEKAA,road,
+R12B,Bekaa-Sidon,2,sidon,road,
+R13,Orontes-Siria norte,1,damascus,road,
+R13,Orontes-Siria norte,2,BEKAA,road,
+R13,Orontes-Siria norte,3,hamath,road,
+R13,Orontes-Siria norte,4,arpad,road,
+R13,Orontes-Siria norte,5,aleppo,road,
+R13,Orontes-Siria norte,6,carchemish,road,
+R13E,Salida Asiria,1,carchemish,road,
+R13E,Salida Asiria,2,HARRAN_BOUNDARY,road,borde exterior hacia Asiria
+R14,Red neo-hitita oeste,1,aleppo,road,
+R14,Red neo-hitita oeste,2,kinalua,road,
+R14,Red neo-hitita oeste,3,samal,road,
+R14,Red neo-hitita oeste,4,gurgum,road,
+R14,Red neo-hitita oeste,5,melid,road,
+R14B,Carquemis-Gurgum-Melid,1,carchemish,road,
+R14B,Carquemis-Gurgum-Melid,2,gurgum,road,
+R14B,Carquemis-Gurgum-Melid,3,melid,road,
+R15,Nilo terrestre-fluvial,1,thebes,mixed,
+R15,Nilo terrestre-fluvial,2,abydos,mixed,
+R15,Nilo terrestre-fluvial,3,hermopolis,mixed,
+R15,Nilo terrestre-fluvial,4,memphis,mixed,
+R15,Nilo terrestre-fluvial,5,heliopolis,mixed,
+R15,Nilo terrestre-fluvial,6,bubastis,mixed,
+R15,Nilo terrestre-fluvial,7,tanis,mixed,
+R15W,Delta occidental,1,memphis,road,
+R15W,Delta occidental,2,sais,road,
+R16,Sinai sur-Aqaba,1,tjaru,road,
+R16,Sinai sur-Aqaba,2,SINAI_CENTRAL,road,waypoint desertico
+R16,Sinai sur-Aqaba,3,serabit,road,
+R16,Sinai sur-Aqaba,4,mount_sinai,trail,landmark no ciudad
+R16,Sinai sur-Aqaba,5,AQABA_NORTH,road,waypoint costero
+R16,Sinai sur-Aqaba,6,ezion_geber,road,
+R17,Mediterraneo maritimo,1,EGYPT_DELTA_PORTS,sea,
+R17,Mediterraneo maritimo,2,gaza,sea,
+R17,Mediterraneo maritimo,3,ashkelon,sea,
+R17,Mediterraneo maritimo,4,ashdod,sea,
+R17,Mediterraneo maritimo,5,tyre,sea,
+R17,Mediterraneo maritimo,6,sidon,sea,
+R17,Mediterraneo maritimo,7,berytus,sea,
+R17,Mediterraneo maritimo,8,byblos,sea,
+R17,Mediterraneo maritimo,9,arwad,sea,
