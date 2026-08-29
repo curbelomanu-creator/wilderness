@@ -3,10 +3,10 @@
 const T=window.THREE,W=window.WildernessWorld;if(!T||!W||typeof player==='undefined'||typeof updatePlayer!=='function')return;
 const mobile=matchMedia('(pointer:coarse)').matches||innerWidth<=820;
 const J={y:0,vy:0,grounded:true};
-function jump(){if(window.WildernessNationSelectionOpen)return;if(!mobile&&['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))return;if(typeof mounted!=='undefined'&&mounted)return;if(!J.grounded)return;J.vy=7.8;J.grounded=false;if(typeof flash==='function')flash('Saltar',450)}
+function jump(){if(window.WildernessNationSelectionOpen||window.WildernessOptionsOpen)return;if(!mobile&&['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))return;if(typeof mounted!=='undefined'&&mounted)return;if(!J.grounded)return;J.vy=7.8;J.grounded=false;if(typeof flash==='function')flash('Saltar',450)}
 const baseUpdate46=updatePlayer;
-updatePlayer=function(dt){baseUpdate46(dt);if(typeof mounted!=='undefined'&&mounted){J.y=0;J.vy=0;J.grounded=true;return}J.vy-=21.5*dt;J.y+=J.vy*dt;if(J.y<=0){J.y=0;J.vy=0;J.grounded=true}else J.grounded=false;player.mesh.position.y=W.groundY(player.mesh.position.x,player.mesh.position.z)+J.y};
-function keyJump(e){if(e.code!=='Space'||e.repeat)return;if(window.WildernessNationSelectionOpen)return;if(['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))return;e.preventDefault();e.stopPropagation();jump()}
+updatePlayer=function(dt){baseUpdate46(dt);if(window.WildernessOptionsOpen)return;if(typeof mounted!=='undefined'&&mounted){J.y=0;J.vy=0;J.grounded=true;return}J.vy-=21.5*dt;J.y+=J.vy*dt;if(J.y<=0){J.y=0;J.vy=0;J.grounded=true}else J.grounded=false;player.mesh.position.y=W.groundY(player.mesh.position.x,player.mesh.position.z)+J.y};
+function keyJump(e){if(e.code!=='Space'||e.repeat)return;if(window.WildernessNationSelectionOpen||window.WildernessOptionsOpen)return;if(['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))return;e.preventDefault();e.stopPropagation();jump()}
 addEventListener('keydown',keyJump,true);
 if(!mobile){window.WildernessControls46={jump,state:J};return}
 for(const id of['btn-attack','btn-interact','btn-retreat','btn-run'])document.getElementById(id)?.remove();
