@@ -45,12 +45,12 @@
     return{x,z,city:g.city,lookX:g.city.x,lookZ:g.city.z,gate:g,anchored:true,outside:true};
   }
 
-  // Several early dedicated-city builders placed their visual gate target at .9r but the wall at r,
-  // leaving the wall/tower directly across the road. Carve only those generated circular capitals.
+  // Early circular-city builders placed road targets at .9r but walls at r. On large capitals that left
+  // a continuous wall/tower across the apparent gate. Remove only tall boundary meshes in each gate lane.
   function carveCapital(c){
-    if(c.custom)return;
-    const G=scene.getObjectByName(c.group);if(!G||carved.has(G))return;
-    const p=cityPoint(c),gs=gatePoints(c);if(!p||!gs.length)return;
+    if(c.custom)return 0;
+    const G=scene.getObjectByName(c.group);if(!G||carved.has(G))return 0;
+    const p=cityPoint(c),gs=gatePoints(c);if(!p||!gs.length)return 0;
     scene.updateMatrixWorld(true);let removed=0;
     G.traverse(o=>{
       if(!o?.isMesh||o.userData?.noCollision||o.userData?.urbanAccessRemoved)return;
@@ -60,30 +60,30 @@
       bb.setFromObject(o);bb.getSize(sz);if(sz.y<6)return;
       o.visible=false;o.userData.urbanAccessRemoved=true;removed++;
     });
-    carved.add(G);G.userData.urbanAccessCarved=removed;
+    carved.add(G);G.userData.urbanAccessCarved=removed;return removed;
   }
 
   function removeLegacyJerusalemGates(){
-    const st=window.WildernessDiplomacy55?.state;if(!st?.gates)return;
+    const st=window.WildernessDiplomacy55?.state;if(!st?.gates)return 0;let removed=0;
     for(const [id,g] of [...st.gates])if(String(g.settlementId||'').startsWith('hist-jerusalem')){
       try{g.root?.parent?.remove?.(g.root)}catch(_){ }
-      st.gates.delete(id);
-    }
+      st.gates.delete(id);removed++;
+    }return removed;
   }
   function cityConfigFromSettlement(id){return byCity.get(String(id||'').replace(/^w6-/,'').split(':')[0])||null}
   function syncDiplomacyGates(){
-    const api=window.WildernessDiplomacy55,st=api?.state;if(!st?.gates)return;
-    removeLegacyJerusalemGates();
+    const api=window.WildernessDiplomacy55,st=api?.state;if(!st?.gates)return 0;
+    let changed=removeLegacyJerusalemGates();
     for(const g of st.gates.values()){
       const c=cityConfigFromSettlement(g.settlementId);if(!c||!g.root)continue;
       const mg=mainGateForFaction(c.faction);if(!mg)continue;
+      const moved=Math.hypot(g.root.position.x-mg.x,g.root.position.z-mg.z)>.5;
       g.root.position.set(mg.x,W.groundY(mg.x,mg.z),mg.z);g.root.rotation.y=mg.rot||0;
       g.root.scale.x=Math.max(g.root.scale.x||1,1.75);g.root.userData.w6UrbanGate=true;
       const rel=N.relationTo?.(c.faction)||'neutral',siege=st.sieges?.has?.(`w6-${c.id}`)||st.sieges?.has?.(g.settlementId);
       const open=!siege&&rel!=='war'&&rel!=='hostile';g.targetOpen=open?1:0;
-      // Open/friendly gates never become invisible collision traps. Closed hostile/siege gates remain solid.
-      g.root.userData.noCollision=!!open;
-    }
+      g.root.userData.noCollision=!!open;if(moved)changed++;
+    }return changed;
   }
 
   function nearbyCapital(pos){
@@ -100,7 +100,7 @@
   function animalBudgetFor(pos){return nearbyCapital(pos)?(mobile?10:18):null}
 
   function tick(){
-    try{for(const c of Object.values(CAPITALS))carveCapital(c);syncDiplomacyGates()}catch(e){console.warn('W6 urban access',e)}
+    try{let changed=0;for(const c of Object.values(CAPITALS))changed+=carveCapital(c);changed+=syncDiplomacyGates();if(changed)window.WildernessCollision45?.rebuild?.(true)}catch(e){console.warn('W6 urban access',e)}
   }
   tick();setInterval(tick,420);
   window.Wilderness6UrbanAccess5131=Object.freeze({version:'5.12.11',profile:mobile?'mobile':'desktop',capitals:Object.freeze(CAPITALS),gatePoints,mainGateForFaction,spawnAnchorFor,nearbyCapital,civilianBudgetFor,enemyBudgetFor,animalBudgetFor,tick});
