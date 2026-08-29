@@ -12,6 +12,12 @@
   const state={hiddenGroups:new Set(),suppressedEntities:0,last:0};
   function dedicatedReady(id){const n=CAPITALS[id];return !!(n&&scene.getObjectByName(n));}
   function hideObj(o){if(!o||o.visible===false)return false;o.visible=false;state.hiddenGroups.add(o.name||'(unnamed)');return true}
+  function suppressEntity(e){
+    if(!e||e.__w6LegacySuppressed)return;
+    e.__w6LegacySuppressed=true;
+    if(e.mesh){e.mesh.visible=false;try{e.mesh.parent?.remove?.(e.mesh)}catch(_){ }}
+    state.suppressedEntities++;
+  }
   function hideRuntime(id){
     try{
       if(typeof generatedSettlements==='undefined')return;
@@ -19,19 +25,11 @@
         const rt=generatedSettlements.get?.(key);if(!rt)continue;
         if(rt.group)hideObj(rt.group);
         if(key.startsWith('hist-')){
-          for(const v of Object.values(rt)){
-            if(Array.isArray(v))for(const e of v)if(e?.mesh)suppressEntity(e);
-          }
+          for(const v of Object.values(rt))if(Array.isArray(v))for(const e of v)if(e?.mesh)suppressEntity(e);
           if(rt.kingRuntime?.mesh)suppressEntity(rt.kingRuntime);
         }
       }
     }catch(e){console.warn('W6 sanitizer runtime',id,e)}
-  }
-  function suppressEntity(e){
-    if(!e||e.__w6LegacySuppressed)return;
-    e.__w6LegacySuppressed=true;
-    if(e.mesh)e.mesh.visible=false;
-    state.suppressedEntities++;
   }
   function suppressLegacyHomeEntities(){
     const arrays=[];
@@ -52,17 +50,12 @@
     if(id==='jerusalem')for(const n of ['jerusalem54','temple5104','jerusalem5105-roads'])hideObj(scene.getObjectByName(n));
   }
   function auditImpossibleRoofs(id){
-    // Dedicated W6 architecture is intentionally compact vertically. This audit only records suspicious meshes;
-    // it never hides legitimate dedicated walls/temples by heuristic.
     const p=D.getPlace?.(id),g=scene.getObjectByName(CAPITALS[id]);if(!p||!g)return 0;
     let n=0;g.traverse(o=>{if(!o?.isMesh)return;const geo=o.geometry?.parameters;if(!geo)return;const h=Number(geo.height),w=Number(geo.width),d=Number(geo.depth);if(h<1&&Math.max(w||0,d||0)>80)n++});return n;
   }
   function tick(){
-    for(const id of Object.keys(CAPITALS))if(dedicatedReady(id)){
-      hideRuntime(id);hideLegacySceneGroups(id);
-    }
+    for(const id of Object.keys(CAPITALS))if(dedicatedReady(id)){hideRuntime(id);hideLegacySceneGroups(id)}
     suppressLegacyHomeEntities();
-    // Rebuild static collision after groups disappear so invisible roofs/walls cannot remain solid.
     try{window.WildernessCollision45?.rebuild?.(true)}catch(_){ }
     state.last=performance.now();
   }
