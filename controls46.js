@@ -1,0 +1,22 @@
+// Wilderness 4.6 - PS-style mobile controls and real jump
+(()=>{
+const T=window.THREE,W=window.WildernessWorld;if(!T||!W||typeof player==='undefined'||typeof updatePlayer!=='function')return;
+const mobile=matchMedia('(pointer:coarse)').matches||innerWidth<=820;
+const J={y:0,vy:0,grounded:true};
+function jump(){if(!mobile&&document.activeElement?.tagName==='INPUT')return;if(typeof mounted!=='undefined'&&mounted)return;if(!J.grounded)return;J.vy=7.8;J.grounded=false;if(typeof flash==='function')flash('Saltar',450)}
+const baseUpdate46=updatePlayer;
+updatePlayer=function(dt){baseUpdate46(dt);if(typeof mounted!=='undefined'&&mounted){J.y=0;J.vy=0;J.grounded=true;return}J.vy-=21.5*dt;J.y+=J.vy*dt;if(J.y<=0){J.y=0;J.vy=0;J.grounded=true}else J.grounded=false;player.mesh.position.y=W.groundY(player.mesh.position.x,player.mesh.position.z)+J.y};
+addEventListener('keydown',e=>{if(e.code==='Space'&&!e.repeat){e.preventDefault();jump()}});
+if(!mobile){window.WildernessControls46={jump,state:J};return}
+// Remove legacy mobile action buttons from interaction; desktop controls remain untouched.
+for(const id of['btn-attack','btn-interact','btn-retreat','btn-run']){const el=document.getElementById(id);if(el){el.style.display='none';el.style.pointerEvents='none'}}
+const weapon=document.getElementById('weapon-toggle15');if(weapon){weapon.style.display='none';weapon.style.pointerEvents='none'}
+const style=document.createElement('style');style.textContent=`#ps46{position:fixed;z-index:82;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));width:178px;height:178px;pointer-events:none;user-select:none}#ps46 button{position:absolute;width:58px;height:58px;border-radius:50%;border:1px solid #f2d99a99;background:#171108c9;color:#fff4d4;box-shadow:0 4px 14px #0008;font:900 27px/1 ui-monospace,monospace;pointer-events:auto;touch-action:none;padding:0;text-shadow:0 1px 2px #000}#ps46 button:active{transform:scale(.92);background:#76502c}#ps46-tri{left:60px;top:0}#ps46-square{left:0;top:60px}#ps46-circle{right:0;top:60px}#ps46-x{left:60px;bottom:0}#ps46-label{position:absolute;left:39px;top:74px;width:100px;text-align:center;color:#e6c98e99;font:700 6px ui-monospace,monospace;letter-spacing:.10em;pointer-events:none}@media(max-width:390px){#ps46{width:164px;height:164px;right:calc(8px + env(safe-area-inset-right,0px))}#ps46 button{width:54px;height:54px;font-size:25px}#ps46-tri{left:55px}#ps46-square{top:55px}#ps46-circle{top:55px}#ps46-x{left:55px}#ps46-label{left:33px;top:68px}}`;document.head.appendChild(style);
+const pad=document.createElement('div');pad.id='ps46';pad.innerHTML='<button id="ps46-tri" aria-label="Acción">△</button><button id="ps46-square" aria-label="Atacar">□</button><button id="ps46-circle" aria-label="Espada">○</button><button id="ps46-x" aria-label="Saltar">×</button><div id="ps46-label">ACCIÓN · COMBATE</div>';document.body.appendChild(pad);
+function bind(id,fn){const b=document.getElementById(id);b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();fn()})}
+bind('ps46-tri',()=>{if(typeof interact==='function')interact()});
+bind('ps46-square',()=>{if(typeof playerAttack==='function')playerAttack()});
+bind('ps46-circle',()=>{const c=window.WildernessCharacters15;if(c?.togglePlayerWeapon)c.togglePlayerWeapon();else if(typeof togglePlayerWeapon==='function')togglePlayerWeapon()});
+bind('ps46-x',jump);
+window.WildernessControls46={jump,state:J,pad};
+})();
