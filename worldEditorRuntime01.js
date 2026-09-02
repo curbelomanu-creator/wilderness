@@ -13,6 +13,7 @@
   const baseRiverAt=W.riverAt?W.riverAt.bind(W):()=>false;
   const baseRiverBankAt=W.riverBankAt?W.riverBankAt.bind(W):()=>false;
   const baseRiverInfoAt=W.riverInfoAt?W.riverInfoAt.bind(W):()=>null;
+  const baseRiverSegmentsNearBounds=W.riverSegmentsNearBounds?W.riverSegmentsNearBounds.bind(W):()=>[];
 
   const blank=()=>({version:1,cellSize:CELL,heights:{},biomes:{},paths:[],updatedAt:Date.now()});
   let data=blank();
@@ -57,6 +58,24 @@
     const width=q.width||3.5,bank=width*3.4;
     return{...q,width,bank,waterY:baseGround(q.x,q.z)-Math.max(.5,width*.16)};
   }
+  function manualRiverSegmentsNearBounds(minX,maxX,minZ,maxZ,pad=26){
+    const out=[];
+    (data.paths||[]).forEach((p,pi)=>{
+      if(p?.type!=='river'||!Array.isArray(p.points)||p.points.length<2)return;
+      const width=Number(p.width)||3.5,bank=width*3.4;
+      for(let i=0;i<p.points.length-1;i++){
+        const a=p.points[i],b=p.points[i+1];
+        if(Math.max(a.x,b.x)<minX-pad||Math.min(a.x,b.x)>maxX+pad||Math.max(a.z,b.z)<minZ-pad||Math.min(a.z,b.z)>maxZ+pad)continue;
+        out.push({
+          id:900000+pi*1000+i,i,river:`editor-${p.id||pi}`,
+          ax:a.x,az:a.z,ay:baseGround(a.x,a.z)-Math.max(.5,width*.16),
+          bx:b.x,bz:b.z,by:baseGround(b.x,b.z)-Math.max(.5,width*.16),
+          width,bank,manual:true
+        });
+      }
+    });
+    return out;
+  }
 
   function groundY(x,z){
     let y=baseGround(x,z)+sampleHeightDelta(x,z);
@@ -94,6 +113,10 @@
     if(manual&&manual.d<=max)return manual;
     return baseRiverInfoAt(x,z,max);
   }
+  function riverSegmentsNearBounds(minX,maxX,minZ,maxZ,pad=26){
+    const original=baseRiverSegmentsNearBounds(minX,maxX,minZ,maxZ,pad)||[];
+    return original.concat(manualRiverSegmentsNearBounds(minX,maxX,minZ,maxZ,pad));
+  }
 
   function save(){data.updatedAt=Date.now();localStorage.setItem(key,JSON.stringify(data));return data}
   function replace(next){data={...blank(),...(next||{}),heights:next?.heights||{},biomes:next?.biomes||{},paths:Array.isArray(next?.paths)?next.paths:[]};save();runtime.data=data;return data}
@@ -105,8 +128,9 @@
   W.riverAt=riverAt;
   W.riverBankAt=riverBankAt;
   W.riverInfoAt=riverInfoAt;
+  W.riverSegmentsNearBounds=riverSegmentsNearBounds;
 
-  const runtime={key,CELL,data,baseGround,baseBiome,sampleHeightDelta,manualBiomeAt,nearestPath,manualRiverInfo,groundY,biomeAt,save,replace,clear,gridKey,hAtGrid};
+  const runtime={key,CELL,data,baseGround,baseBiome,sampleHeightDelta,manualBiomeAt,nearestPath,manualRiverInfo,manualRiverSegmentsNearBounds,groundY,biomeAt,riverSegmentsNearBounds,save,replace,clear,gridKey,hAtGrid};
   window.WildernessWorldEditorRuntime=runtime;
 
   // Development-only entry point to the editor. The public game remains playable normally.
